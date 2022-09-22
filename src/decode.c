@@ -1,4 +1,5 @@
 #include "decode.h"
+#include "bootp.h"
 #include "macro.h"
 
 void got_packet(u_char *args, const struct pcap_pkthdr *header,
@@ -28,6 +29,53 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header,
             ip->ip_v, ip->ip_hl, ip->ip_tos, ip->ip_len, ip->ip_id, ip->ip_off,
             ip->ip_ttl, ip->ip_p, ip->ip_sum, inet_ntoa(ip->ip_src),
             inet_ntoa(ip->ip_dst));
+        // On vérifie le type de protocole
+        switch (ip->ip_p) {
+        case IPPROTO_TCP:
+            printf("Protocole TCP\n");
+            struct tcphdr *tcp;
+            tcp = (struct tcphdr *)(packet + sizeof(struct ether_header) +
+                                    sizeof(struct ip));
+            printf(
+                "Port source : %d, Port destination : %d, Numéro de séquence "
+                ": %d, Numéro d'acquittement : %d, Taille de l'entête TCP : "
+                "%d, Flags : %d, Taille de la fenêtre : %d, Somme de "
+                "contrôle : %d, Pointeur d'urgence : %d\n",
+                ntohs(tcp->th_sport), ntohs(tcp->th_dport), tcp->th_seq,
+                tcp->th_ack, tcp->th_off, tcp->th_flags, tcp->th_win,
+                tcp->th_sum, tcp->th_urp);
+            break;
+        case IPPROTO_UDP:
+            printf("Protocole UDP\n");
+            struct udphdr *udp;
+            udp = (struct udphdr *)(packet + sizeof(struct ether_header) +
+                                    sizeof(struct ip));
+            printf("Port source : %d, Port destination : %d, Taille : %d\n",
+                   ntohs(udp->uh_sport), ntohs(udp->uh_dport), udp->uh_ulen);
+            // On vérifie si c'est un BOOTP
+            if (ntohs(udp->uh_sport) == 67 || ntohs(udp->uh_dport) == 67) {
+                printf("BOOTP\n");
+                struct bootphdr *bootp;
+                bootp =
+                    (struct bootphdr *)(packet + sizeof(struct ether_header) +
+                                        sizeof(struct ip) +
+                                        sizeof(struct udphdr));
+                printf(
+                    "Type : %d, htype : %d, hlen : %d, hops : %d, "
+                    "transaction id : %d, Delay : %d, Flags : %d, Adresse "
+                    "IP client : %s, Your adresse IP  : %s, Adresse de Gateway "
+                    ": %s, Adresse MAC source "
+                    ": %s, Adresse MAC client : %s, Fichier de boot : %s, Nom "
+                    "du serveur : %s",
+                    bootp->op, bootp->htype, bootp->hlen, bootp->hops,
+                    bootp->xid, bootp->secs, bootp->flags,
+                    inet_ntoa(bootp->ciaddr), inet_ntoa(bootp->yiaddr),
+                    inet_ntoa(bootp->siaddr), inet_ntoa(bootp->giaddr),
+                    ether_ntoa((struct ether_addr *)bootp->chaddr), bootp->file,
+                    bootp->sname);
+            }
+            break;
+        }
         break;
     case ETHERTYPE_ARP:
         printf("ARP\n");

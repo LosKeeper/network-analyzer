@@ -30,4 +30,4 @@ To use the programm, you must run the executable file `sniffer` with the followi
 
 ## To do
 - [ ] Load infos from a file.
-- [ ] Read BOOTP/DHCP packets.
+- [x] Read BOOTP/DHCP packets.
