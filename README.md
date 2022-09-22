@@ -29,5 +29,6 @@ To use the programm, you must run the executable file `sniffer` with the followi
 * `./sniffer -i eth0 -f "port 80" -v 1`: Capture the packets from the interface `eth0` and apply the filter `port 80` and display more infos in the terminal.
 
 ## To do
-- [ ] Load infos from a file.
+- [x] Load infos from a file.
 - [x] Read BOOTP/DHCP packets.
+- [ ] Decode vendor infos in DHCP packets.

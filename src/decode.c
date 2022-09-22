@@ -5,10 +5,11 @@
 void got_packet(u_char *args, const struct pcap_pkthdr *header,
                 const u_char *packet) {
     (void)args;
-
+    (void)header;
     struct ether_header *eth_header;
     printf("Trame reçue : \n");
     eth_header = (struct ether_header *)packet;
+    packet += sizeof(struct ether_header);
     printf("Adresse MAC source : %s ",
            ether_ntoa((struct ether_addr *)eth_header->ether_shost));
     printf("Adresse MAC destination : %s, Type : %d \n",
@@ -19,7 +20,8 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header,
     switch (htons(eth_header->ether_type)) {
     case ETHERTYPE_IP:
         struct ip *ip;
-        ip = (struct ip *)(packet + sizeof(struct ether_header));
+        ip = (struct ip *)(packet);
+        packet += sizeof(struct ip);
         printf(
             "Version IP : %d, Taille de l'entête IP : %d, Type de service : "
             "%d, "
@@ -34,8 +36,8 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header,
         case IPPROTO_TCP:
             printf("Protocole TCP\n");
             struct tcphdr *tcp;
-            tcp = (struct tcphdr *)(packet + sizeof(struct ether_header) +
-                                    sizeof(struct ip));
+            tcp = (struct tcphdr *)(packet);
+            packet += sizeof(struct tcphdr);
             printf(
                 "Port source : %d, Port destination : %d, Numéro de séquence "
                 ": %d, Numéro d'acquittement : %d, Taille de l'entête TCP : "
@@ -48,31 +50,43 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header,
         case IPPROTO_UDP:
             printf("Protocole UDP\n");
             struct udphdr *udp;
-            udp = (struct udphdr *)(packet + sizeof(struct ether_header) +
-                                    sizeof(struct ip));
+            udp = (struct udphdr *)(packet);
+            packet += sizeof(struct udphdr);
             printf("Port source : %d, Port destination : %d, Taille : %d\n",
                    ntohs(udp->uh_sport), ntohs(udp->uh_dport), udp->uh_ulen);
             // On vérifie si c'est un BOOTP
             if (ntohs(udp->uh_sport) == 67 || ntohs(udp->uh_dport) == 67) {
                 printf("BOOTP\n");
                 struct bootphdr *bootp;
-                bootp =
-                    (struct bootphdr *)(packet + sizeof(struct ether_header) +
-                                        sizeof(struct ip) +
-                                        sizeof(struct udphdr));
+                bootp = (struct bootphdr *)(packet);
+                packet += sizeof(struct bootphdr);
                 printf(
                     "Type : %d, htype : %d, hlen : %d, hops : %d, "
                     "transaction id : %d, Delay : %d, Flags : %d, Adresse "
                     "IP client : %s, Your adresse IP  : %s, Adresse de Gateway "
                     ": %s, Adresse MAC source "
                     ": %s, Adresse MAC client : %s, Fichier de boot : %s, Nom "
-                    "du serveur : %s",
+                    "du serveur : %s\n",
                     bootp->op, bootp->htype, bootp->hlen, bootp->hops,
                     bootp->xid, bootp->secs, bootp->flags,
                     inet_ntoa(bootp->ciaddr), inet_ntoa(bootp->yiaddr),
                     inet_ntoa(bootp->siaddr), inet_ntoa(bootp->giaddr),
                     ether_ntoa((struct ether_addr *)bootp->chaddr), bootp->file,
                     bootp->sname);
+                // Vendor specific informations
+                struct vendorhdr *vendor;
+                while (vendor->type != 0xff) {
+                    printf("Vendor specific informations : \n");
+                    vendor = (struct vendorhdr *)(packet);
+                    packet += sizeof(struct vendorhdr);
+                    char *data = malloc(vendor->len);
+                    data = (char *)(packet);
+                    packet += vendor->len;
+                    // Get data of the vendor specific informations
+                    // TODO : Get only dhcp options data
+                    printf("Type : %d, Length : %d, Data : %s\n", vendor->type,
+                           vendor->len, data);
+                }
             }
             break;
         }
@@ -84,22 +98,30 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header,
         printf("REVARP\n");
         break;
     }
-
-    for (bpf_u_int32 i = 0; i < header->caplen; i++) {
-        printf("%02x ", packet[i]);
-    }
     printf("\n");
 }
 
-void decode(char *interface) {
-    pcap_t *handle;
-    // struct bpf_program *fp;
-    char errbuf[PCAP_ERRBUF_SIZE];
-    // bpf_u_int32 netmask;
+void decode(char *interface, char *file) {
+    if (interface) {
+        pcap_t *handle;
+        // struct bpf_program *fp;
+        char errbuf[PCAP_ERRBUF_SIZE];
+        // bpf_u_int32 netmask;
 
-    if ((handle = pcap_open_live(interface, BUFSIZ, 1, 1000, errbuf)) == NULL) {
-        panic("pcap_open_live");
+        if ((handle = pcap_open_live(interface, BUFSIZ, 1, 1000, errbuf)) ==
+            NULL) {
+            panic("pcap_open_live");
+        }
+
+        pcap_loop(handle, -1, got_packet, NULL);
+    } else {
+        pcap_t *handle;
+        char errbuf[PCAP_ERRBUF_SIZE];
+
+        if ((handle = pcap_open_offline(file, errbuf)) == NULL) {
+            panic("pcap_open_offline");
+        }
+
+        pcap_loop(handle, -1, got_packet, NULL);
     }
-
-    pcap_loop(handle, -1, got_packet, NULL);
 }

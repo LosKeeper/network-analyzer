@@ -22,5 +22,6 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header,
  * @brief Decode the packets
  *
  * @param interface the interface to sniff
+ * @param file the file to decode
  */
-void decode(char *interface);
+void decode(char *interface, char *file);

@@ -8,7 +8,11 @@ int main(int argc, char *argv[]) {
     parse_args(argc, argv, &argument);
 
     // Decode
-    decode(argument.interface);
+    if (argument.interface != NULL) {
+        decode(argument.interface, NULL);
+    } else {
+        decode(NULL, argument.file);
+    }
 
     return 0;
 }

@@ -38,8 +38,13 @@ void parse_args(int argc, char **argv, args_s *argument) {
 }
 
 void validity_check(args_s *argument) {
-    if (argument->interface == NULL) {
-        fprintf(stderr, "You must specify an interface");
+    if (argument->interface == NULL && argument->file == NULL) {
+        fprintf(stderr, "You must specify an interface or a file");
+        print_usage("sniffer");
+        exit(EXIT_FAILURE);
+    }
+    if (argument->interface != NULL && argument->file != NULL) {
+        fprintf(stderr, "You must specify an interface or a file, not both");
         print_usage("sniffer");
         exit(EXIT_FAILURE);
     }
