@@ -1,13 +1,12 @@
 #include "decode.h"
+#include "macro.h"
 
 void got_packet(u_char *args, const struct pcap_pkthdr *header,
                 const u_char *packet) {
     (void)args;
 
-    struct ip *ip;
     struct ether_header *eth_header;
     printf("Trame reçue : \n");
-
     eth_header = (struct ether_header *)packet;
     printf("Adresse MAC source : %s ",
            ether_ntoa((struct ether_addr *)eth_header->ether_shost));
@@ -18,6 +17,7 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header,
     // On vérifie le type de packet
     switch (htons(eth_header->ether_type)) {
     case ETHERTYPE_IP:
+        struct ip *ip;
         ip = (struct ip *)(packet + sizeof(struct ether_header));
         printf(
             "Version IP : %d, Taille de l'entête IP : %d, Type de service : "
@@ -50,8 +50,7 @@ void decode(char *interface) {
     // bpf_u_int32 netmask;
 
     if ((handle = pcap_open_live(interface, BUFSIZ, 1, 1000, errbuf)) == NULL) {
-        fprintf(stderr, "Couldn't open device eth0: %s", errbuf);
-        exit(1);
+        panic("pcap_open_live");
     }
 
     pcap_loop(handle, -1, got_packet, NULL);
