@@ -24,3 +24,11 @@ struct vendorhdr {
     uint8_t type; // type
     uint8_t len;  // length
 };
+
+/**
+ * @brief Get the vendor type object
+ *
+ * @param type
+ * @return The string representation of the vendor type
+ */
+char *get_vendor_type(uint8_t type);

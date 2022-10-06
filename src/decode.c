@@ -84,10 +84,15 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header,
                     packet += vendor->len;
                     // Get data of the vendor specific informations
                     // TODO : Get only dhcp options data
-                    printf("Type : %d, Length : %d, Data : %s\n", vendor->type,
+                    printf("Type : %d -> %s, Length : %d, Data : %s\n",
+                           vendor->type, get_vendor_type(vendor->type),
                            vendor->len, data);
                 }
             }
+            // On vérifie si c'est un DNS
+            if (ntohs(udp->uh_sport) == 53 || ntohs(udp->uh_dport) == 53) {
+                printf("DNS\n");
+                        }
             break;
         }
         break;
