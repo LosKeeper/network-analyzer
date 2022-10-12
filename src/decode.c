@@ -1,5 +1,6 @@
 #include "decode.h"
 #include "bootp.h"
+#include "dns.h"
 #include "macro.h"
 
 void got_packet(u_char *args, const struct pcap_pkthdr *header,
@@ -92,41 +93,64 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header,
             // On vérifie si c'est un DNS
             if (ntohs(udp->uh_sport) == 53 || ntohs(udp->uh_dport) == 53) {
                 printf("DNS\n");
-                        }
+                struct dnshdr *dns;
+                dns = (struct dnshdr *)(packet);
+                packet += sizeof(struct dnshdr);
+                printf("ID : %d, Flags : %d, Questions : %d, Réponses : %d, "
+                       "Autorités : %d, Supplémentaires : %d\n",
+                       dns->id, dns->flags, dns->qdcount, dns->ancount,
+                       dns->nscount, dns->arcount);
+
+                // On vérifie si c'est une requête ou une réponse
+                if (dns->flags & 0x8000) {
+                    printf("Réponse DNS\n");
+                    // Réponse DNS
+                    // On recupere toutes les reponses
+                    for (int i = 0; i < dns->qdcount; i++) {
+                        uint16_t len = 0;
+                    }
+                } else {
+                    printf("Requête DNS\n");
+                    // Requête DNS
+                    // On recupere toutes les questions
+                    for (int i = 0; i < dns->qdcount; i++) {
+                        uint16_t len = 0;
+                    }
+                }
+                break;
+            }
+            break;
+        case ETHERTYPE_ARP:
+            printf("ARP\n");
+            break;
+        case ETHERTYPE_REVARP:
+            printf("REVARP\n");
             break;
         }
-        break;
-    case ETHERTYPE_ARP:
-        printf("ARP\n");
-        break;
-    case ETHERTYPE_REVARP:
-        printf("REVARP\n");
-        break;
+        printf("\n");
     }
-    printf("\n");
-}
 
-void decode(char *interface, char *file) {
-    if (interface) {
-        pcap_t *handle;
-        // struct bpf_program *fp;
-        char errbuf[PCAP_ERRBUF_SIZE];
-        // bpf_u_int32 netmask;
+    void decode(char *interface, char *file) {
+        if (interface) {
+            pcap_t *handle;
+            // struct bpf_program *fp;
+            char errbuf[PCAP_ERRBUF_SIZE];
+            // bpf_u_int32 netmask;
 
-        if ((handle = pcap_open_live(interface, BUFSIZ, 1, 1000, errbuf)) ==
-            NULL) {
-            panic("pcap_open_live");
+            if ((handle = pcap_open_live(interface, BUFSIZ, 1, 1000, errbuf)) ==
+                NULL) {
+                panic("pcap_open_live");
+            }
+
+            pcap_loop(handle, -1, got_packet, NULL);
+        } else {
+            pcap_t *handle;
+            char errbuf[PCAP_ERRBUF_SIZE];
+
+            if ((handle = pcap_open_offline(file, errbuf)) == NULL) {
+                panic("pcap_open_offline");
+            }
+
+            pcap_loop(handle, -1, got_packet, NULL);
         }
-
-        pcap_loop(handle, -1, got_packet, NULL);
-    } else {
-        pcap_t *handle;
-        char errbuf[PCAP_ERRBUF_SIZE];
-
-        if ((handle = pcap_open_offline(file, errbuf)) == NULL) {
-            panic("pcap_open_offline");
-        }
-
-        pcap_loop(handle, -1, got_packet, NULL);
     }
-}
