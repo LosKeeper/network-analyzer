@@ -1,4 +1,5 @@
 #pragma once
+#include <ctype.h>
 #include <net/ethernet.h>
 #include <netinet/ether.h>
 #include <netinet/ip.h>

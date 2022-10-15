@@ -22,7 +22,7 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header,
     case ETHERTYPE_IP:
         struct ip *ip;
         ip = (struct ip *)(packet);
-        packet += sizeof(struct ip);
+        packet += ip->ip_hl * 4;
         printf(
             "Version IP : %d, Taille de l'entête IP : %d, Type de service : "
             "%d, "
@@ -38,7 +38,7 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header,
             printf("Protocole TCP\n");
             struct tcphdr *tcp;
             tcp = (struct tcphdr *)(packet);
-            packet += sizeof(struct tcphdr);
+            packet += tcp->th_off * 4;
             printf(
                 "Port source : %d, Port destination : %d, Numéro de séquence "
                 ": %d, Numéro d'acquittement : %d, Taille de l'entête TCP : "
@@ -61,33 +61,33 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header,
                 struct bootphdr *bootp;
                 bootp = (struct bootphdr *)(packet);
                 packet += sizeof(struct bootphdr);
-                printf(
-                    "Type : %d, htype : %d, hlen : %d, hops : %d, "
-                    "transaction id : %d, Delay : %d, Flags : %d, Adresse "
-                    "IP client : %s, Your adresse IP  : %s, Adresse de Gateway "
-                    ": %s, Adresse MAC source "
-                    ": %s, Adresse MAC client : %s, Fichier de boot : %s, Nom "
-                    "du serveur : %s\n",
-                    bootp->op, bootp->htype, bootp->hlen, bootp->hops,
-                    bootp->xid, bootp->secs, bootp->flags,
-                    inet_ntoa(bootp->ciaddr), inet_ntoa(bootp->yiaddr),
-                    inet_ntoa(bootp->siaddr), inet_ntoa(bootp->giaddr),
-                    ether_ntoa((struct ether_addr *)bootp->chaddr), bootp->file,
-                    bootp->sname);
+                print_bootp(bootp);
                 // Vendor specific informations
                 struct vendorhdr *vendor;
+                vendor = (struct vendorhdr *)(packet);
                 while (vendor->type != 0xff) {
                     printf("Vendor specific informations : \n");
                     vendor = (struct vendorhdr *)(packet);
                     packet += sizeof(struct vendorhdr);
-                    char *data = malloc(vendor->len);
-                    data = (char *)(packet);
+
+                    // Trim the data to print only the useful informations
+                    char *trimmed_data = malloc(vendor->len);
+                    int i = 0;
+                    while (i < vendor->len) {
+                        if (isprint(packet[i])) {
+                            trimmed_data[i] = packet[i];
+                        } else {
+                            trimmed_data[i] = ' ';
+                        }
+                        i++;
+                    }
+
                     packet += vendor->len;
                     // Get data of the vendor specific informations
                     // TODO : Get only dhcp options data
                     printf("Type : %d -> %s, Length : %d, Data : %s\n",
                            vendor->type, get_vendor_type(vendor->type),
-                           vendor->len, data);
+                           vendor->len, trimmed_data);
                 }
             }
             // On vérifie si c'est un DNS
@@ -107,50 +107,84 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header,
                     // Réponse DNS
                     // On recupere toutes les reponses
                     for (int i = 0; i < dns->qdcount; i++) {
-                        uint16_t len = 0;
+                        printf("Question : ");
+                        uint8_t len;
+                        while ((len = *(uint8_t *)packet) != 0) {
+                            packet += sizeof(len);
+                            char *data = malloc(len);
+                            data = (char *)(packet);
+                            packet += len;
+                            printf("%s.", data);
+                        }
+                        // printf("\n");
+                        // struct dnsanswer *dnsans;
+                        // dnsans = (struct dnsanswer *)(packet);
+                        // packet += sizeof(struct dnsanswer);
+                        // printf("Type : %d, Class : %d, TTL : %d, Data
+                        // length : "
+                        //        "%d, IP : %s\n",
+                        //        dnsans->type, dnsans->class, dnsans->ttl,
+                        //        dnsans->rdlength,
+                        //        inet_ntoa(dnsans->rdata));
                     }
+
                 } else {
                     printf("Requête DNS\n");
                     // Requête DNS
                     // On recupere toutes les questions
                     for (int i = 0; i < dns->qdcount; i++) {
-                        uint16_t len = 0;
+                        printf("Réponse : ");
+                        uint8_t len;
+                        while ((len = *(uint8_t *)packet) != 0) {
+                            packet += sizeof(len);
+                            char *data = malloc(len);
+                            data = (char *)(packet);
+                            packet += len;
+                            printf("%s.", data);
+                        }
+                        // printf("\n");
+                        // struct dnsquestion *dnsq;
+                        // dnsq = (struct dnsquestion *)(packet);
+                        // packet += sizeof(struct dnsquestion);
+                        // printf("Type : %d, Class : %d\n", dnsq->qtype,
+                        //        dnsq->qclass);
                     }
                 }
-                break;
             }
-            break;
-        case ETHERTYPE_ARP:
-            printf("ARP\n");
-            break;
-        case ETHERTYPE_REVARP:
-            printf("REVARP\n");
             break;
         }
-        printf("\n");
+        break;
+    case ETHERTYPE_ARP:
+        printf("ARP\n");
+        break;
+    case ETHERTYPE_REVARP:
+        printf("REVARP\n");
+        break;
     }
+    printf("\n");
+}
 
-    void decode(char *interface, char *file) {
-        if (interface) {
-            pcap_t *handle;
-            // struct bpf_program *fp;
-            char errbuf[PCAP_ERRBUF_SIZE];
-            // bpf_u_int32 netmask;
+void decode(char *interface, char *file) {
+    if (interface) {
+        pcap_t *handle;
+        // struct bpf_program *fp;
+        char errbuf[PCAP_ERRBUF_SIZE];
+        // bpf_u_int32 netmask;
 
-            if ((handle = pcap_open_live(interface, BUFSIZ, 1, 1000, errbuf)) ==
-                NULL) {
-                panic("pcap_open_live");
-            }
-
-            pcap_loop(handle, -1, got_packet, NULL);
-        } else {
-            pcap_t *handle;
-            char errbuf[PCAP_ERRBUF_SIZE];
-
-            if ((handle = pcap_open_offline(file, errbuf)) == NULL) {
-                panic("pcap_open_offline");
-            }
-
-            pcap_loop(handle, -1, got_packet, NULL);
+        if ((handle = pcap_open_live(interface, BUFSIZ, 1, 1000, errbuf)) ==
+            NULL) {
+            panic("pcap_open_live");
         }
+
+        pcap_loop(handle, -1, got_packet, NULL);
+    } else {
+        pcap_t *handle;
+        char errbuf[PCAP_ERRBUF_SIZE];
+
+        if ((handle = pcap_open_offline(file, errbuf)) == NULL) {
+            panic("pcap_open_offline");
+        }
+
+        pcap_loop(handle, -1, got_packet, NULL);
     }
+}

@@ -32,4 +32,5 @@ To use the programm, you must run the executable file `sniffer` with the followi
 - [x] Load infos from a file.
 - [x] Read BOOTP/DHCP packets.
 - [x] Decode vendor infos in DHCP packets.
+- [ ] Print correctly the vendor infos.
 - [ ] Deocde DNS packets.

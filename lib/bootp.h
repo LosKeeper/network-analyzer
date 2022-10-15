@@ -32,3 +32,10 @@ struct vendorhdr {
  * @return The string representation of the vendor type
  */
 char *get_vendor_type(uint8_t type);
+
+/**
+ * @brief Print the bootp header
+ *
+ * @param bootp
+ */
+void print_bootp(struct bootphdr *bootp);
