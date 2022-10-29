@@ -22,7 +22,11 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header,
         struct ip *ip;
         ip = (struct ip *)(packet);
         packet += ip->ip_hl * 4;
-        printf(
+        print_verbosity(*args, 0, "From : %s ", inet_ntoa(ip->ip_src));
+        print_verbosity(*args, 0, "To : %s :", inet_ntoa(ip->ip_dst));
+        //! Buffer inet_ntoa
+        print_verbosity(
+            *args, 1,
             "Version IP : %d, Taille de l'entête IP : %d, Type de service : "
             "%d, "
             "Taille totale : %d, Identifiant : %d, Offset : %d, TTL : %d, "

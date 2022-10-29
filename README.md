@@ -20,7 +20,7 @@ To use the programm, you must run the executable file `sniffer` with the followi
 * `-i` or `--interface` followed by the name of the interface to capture the packets from.
 * `-o` or `--origin`    followed by the file name to sniffer the packets from.
 * `-f` or `--filter`    followed by the filter to apply to the packets.
-* `-v` or `--verbose`   followed by `1` or `2` or `3` to display more infos in the terminal.
+* `-v` or `--verbose`   followed by `0` or `1` or `2` to display more infos in the terminal.
 * `-h` or `--help`      to display the help.
 
 ## Examples
