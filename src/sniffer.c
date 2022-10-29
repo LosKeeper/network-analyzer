@@ -9,9 +9,9 @@ int main(int argc, char *argv[]) {
 
     // Decode
     if (argument.interface != NULL) {
-        decode(argument.interface, NULL);
+        decode(argument.interface, NULL, argument.verbose);
     } else {
-        decode(NULL, argument.file);
+        decode(NULL, argument.file, argument.verbose);
     }
 
     return 0;

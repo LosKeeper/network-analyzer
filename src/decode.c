@@ -2,20 +2,19 @@
 #include "bootp.h"
 #include "dns.h"
 #include "macro.h"
+#include "verbose.h"
 
 void got_packet(u_char *args, const struct pcap_pkthdr *header,
                 const u_char *packet) {
-    (void)args;
     (void)header;
     struct ether_header *eth_header;
-    printf("Trame reçue : \n");
     eth_header = (struct ether_header *)packet;
     packet += sizeof(struct ether_header);
-    printf("Adresse MAC source : %s ",
-           ether_ntoa((struct ether_addr *)eth_header->ether_shost));
-    printf("Adresse MAC destination : %s, Type : %d \n",
-           ether_ntoa((struct ether_addr *)eth_header->ether_dhost),
-           htons(eth_header->ether_type));
+    print_verbosity(*args, 2, "Adresse MAC source : %s ",
+                    ether_ntoa((struct ether_addr *)eth_header->ether_shost));
+    print_verbosity(*args, 2, "Adresse MAC destination : %s, Type : %d \n",
+                    ether_ntoa((struct ether_addr *)eth_header->ether_dhost),
+                    htons(eth_header->ether_type));
 
     // On vérifie le type de packet
     switch (htons(eth_header->ether_type)) {
@@ -164,7 +163,7 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header,
     printf("\n");
 }
 
-void decode(char *interface, char *file) {
+void decode(char *interface, char *file, u_char verbosity) {
     if (interface) {
         pcap_t *handle;
         // struct bpf_program *fp;
@@ -185,6 +184,6 @@ void decode(char *interface, char *file) {
             panic("pcap_open_offline");
         }
 
-        pcap_loop(handle, -1, got_packet, NULL);
+        pcap_loop(handle, -1, got_packet, &verbosity);
     }
 }
