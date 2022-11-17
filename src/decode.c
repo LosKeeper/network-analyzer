@@ -1,9 +1,11 @@
 #include "decode.h"
 #include "bootp.h"
 #include "dns.h"
+#include "http.h"
 #include "macro.h"
 #include "smtp.h"
 #include "verbose.h"
+#include <string.h>
 
 void got_packet(u_char *args, const struct pcap_pkthdr *header,
                 const u_char *packet) {
@@ -45,6 +47,31 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header,
             case SMTP_PORT:
                 print_verbosity(*args, 1, "Protocole SMTP\n");
                 print_verbosity(*args, 2, "%s", packet);
+                break;
+            case HTTP_PORT:
+                print_verbosity(*args, 1, "Protocole HTTP\n");
+                // Print only printable characters
+                for (size_t i = 0; i < strlen((char *)packet); i++) {
+                    if (isprint(packet[i])) {
+                        print_verbosity(*args, 2, "%c", packet[i]);
+                    }
+                }
+                break;
+            }
+            // On vérifie le port destination
+            switch (ntohs(tcp->th_dport)) {
+            case SMTP_PORT:
+                print_verbosity(*args, 1, "Protocole SMTP\n");
+                print_verbosity(*args, 2, "%s", packet);
+                break;
+            case HTTP_PORT:
+                print_verbosity(*args, 1, "Protocole HTTP\n");
+                // Print only printable characters
+                for (size_t i = 0; i < strlen((char *)packet); i++) {
+                    if (isprint(packet[i])) {
+                        print_verbosity(*args, 2, "%c", packet[i]);
+                    }
+                }
                 break;
             }
             break;
