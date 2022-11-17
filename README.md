@@ -32,6 +32,10 @@ To use the programm, you must run the executable file `sniffer` with the followi
 - [x] Load infos from a file.
 - [x] Read BOOTP/DHCP packets.
 - [x] Decode vendor infos in DHCP packets.
-- [ ] Verbose mode.
+- [x] Verbose mode.
+- [x] Decode SMTP packets.
 - [ ] Print correctly the vendor infos.
 - [ ] Deocde DNS packets.
+- [ ] Decode HTTP packets.
+- [ ] Decode POP3 packets.
+- [ ] Decode IMAP packets.

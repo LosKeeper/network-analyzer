@@ -2,6 +2,7 @@
 #include "bootp.h"
 #include "dns.h"
 #include "macro.h"
+#include "smtp.h"
 #include "verbose.h"
 
 void got_packet(u_char *args, const struct pcap_pkthdr *header,
@@ -10,11 +11,10 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header,
     struct ether_header *eth_header;
     eth_header = (struct ether_header *)packet;
     packet += sizeof(struct ether_header);
-    print_verbosity(*args, 2, "Adresse MAC source : %s ",
+    print_verbosity(*args, 1, "From MAC Addr : %s , ",
                     ether_ntoa((struct ether_addr *)eth_header->ether_shost));
-    print_verbosity(*args, 2, "Adresse MAC destination : %s, Type : %d \n",
-                    ether_ntoa((struct ether_addr *)eth_header->ether_dhost),
-                    htons(eth_header->ether_type));
+    print_verbosity(*args, 1, "To MAC Addr : %s\n",
+                    ether_ntoa((struct ether_addr *)eth_header->ether_dhost));
 
     // On vérifie le type de packet
     switch (htons(eth_header->ether_type)) {
@@ -22,27 +22,17 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header,
         struct ip *ip;
         ip = (struct ip *)(packet);
         packet += ip->ip_hl * 4;
-        print_verbosity(*args, 0, "From : %s ", inet_ntoa(ip->ip_src));
-        print_verbosity(*args, 0, "To : %s :", inet_ntoa(ip->ip_dst));
-        //! Buffer inet_ntoa
-        print_verbosity(
-            *args, 1,
-            "Version IP : %d, Taille de l'entête IP : %d, Type de service : "
-            "%d, "
-            "Taille totale : %d, Identifiant : %d, Offset : %d, TTL : %d, "
-            "Protocole : %d, Somme de contrôle : %d, Adresse IP source : %s, "
-            "Adresse IP destination : %s\n",
-            ip->ip_v, ip->ip_hl, ip->ip_tos, ip->ip_len, ip->ip_id, ip->ip_off,
-            ip->ip_ttl, ip->ip_p, ip->ip_sum, inet_ntoa(ip->ip_src),
-            inet_ntoa(ip->ip_dst));
+        print_verbosity(*args, 0, "From : %s , ", inet_ntoa(ip->ip_src));
+        print_verbosity(*args, 0, "To : %s\n", inet_ntoa(ip->ip_dst));
         // On vérifie le type de protocole
         switch (ip->ip_p) {
         case IPPROTO_TCP:
-            printf("Protocole TCP\n");
+            print_verbosity(*args, 1, "Protocole TCP\n");
             struct tcphdr *tcp;
             tcp = (struct tcphdr *)(packet);
             packet += tcp->th_off * 4;
-            printf(
+            print_verbosity(
+                *args, 2,
                 "Port source : %d, Port destination : %d, Numéro de séquence "
                 ": %d, Numéro d'acquittement : %d, Taille de l'entête TCP : "
                 "%d, Flags : %d, Taille de la fenêtre : %d, Somme de "
@@ -50,14 +40,22 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header,
                 ntohs(tcp->th_sport), ntohs(tcp->th_dport), tcp->th_seq,
                 tcp->th_ack, tcp->th_off, tcp->th_flags, tcp->th_win,
                 tcp->th_sum, tcp->th_urp);
+            // On vérifie le port source
+            switch (ntohs(tcp->th_sport)) {
+            case SMTP_PORT:
+                print_verbosity(*args, 1, "Protocole SMTP\n");
+                print_verbosity(*args, 2, "%s", packet);
+                break;
+            }
             break;
         case IPPROTO_UDP:
-            printf("Protocole UDP\n");
             struct udphdr *udp;
             udp = (struct udphdr *)(packet);
             packet += sizeof(struct udphdr);
-            printf("Port source : %d, Port destination : %d, Taille : %d\n",
-                   ntohs(udp->uh_sport), ntohs(udp->uh_dport), udp->uh_ulen);
+            print_verbosity(*args, 1, "UDP ");
+            print_verbosity(*args, 1, "From Port : %d , ",
+                            ntohs(udp->uh_sport));
+            print_verbosity(*args, 1, "To Port : %d\n", ntohs(udp->uh_dport));
             // On vérifie si c'est un BOOTP
             if (ntohs(udp->uh_sport) == 67 || ntohs(udp->uh_dport) == 67) {
                 printf("BOOTP\n");
