@@ -7,6 +7,8 @@
 #include "verbose.h"
 #include <string.h>
 
+int packet_count = 0;
+
 void got_packet(u_char *args, const struct pcap_pkthdr *header,
                 const u_char *packet) {
     (void)header;
@@ -24,12 +26,17 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header,
         struct ip *ip;
         ip = (struct ip *)(packet);
         packet += ip->ip_hl * 4;
-        print_verbosity(*args, 0, "From : %s , ", inet_ntoa(ip->ip_src));
-        print_verbosity(*args, 0, "To : %s\n", inet_ntoa(ip->ip_dst));
+        // print_verbosity(*args, 1, "IPv4 packet\n");
+        packet_count++;
+        print_verbosity(*args, 0, "\033[0m");
+
+        print_verbosity(*args, 0, "%d\t\t\t\t\t", packet_count);
+        print_verbosity(*args, 0, "%s\t\t\t\t", inet_ntoa(ip->ip_src));
+        print_verbosity(*args, 0, "%s\t\t\t\t", inet_ntoa(ip->ip_dst));
         // On vérifie le type de protocole
         switch (ip->ip_p) {
         case IPPROTO_TCP:
-            print_verbosity(*args, 1, "Protocole TCP\n");
+            // print_verbosity(*args, 1, "Protocole TCP\n");
             struct tcphdr *tcp;
             tcp = (struct tcphdr *)(packet);
             packet += tcp->th_off * 4;
@@ -45,10 +52,14 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header,
             // On vérifie le port source
             switch (ntohs(tcp->th_sport)) {
             case SMTP_PORT:
+                print_verbosity(*args, 0, "SMTP\t\t\t\t");
+
                 print_verbosity(*args, 1, "Protocole SMTP\n");
                 print_verbosity(*args, 2, "%s", packet);
                 break;
             case HTTP_PORT:
+                print_verbosity(*args, 0, "HTTP\t\t\t\t");
+
                 print_verbosity(*args, 1, "Protocole HTTP\n");
                 // Print only printable characters
                 for (size_t i = 0; i < strlen((char *)packet); i++) {
@@ -56,6 +67,9 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header,
                         print_verbosity(*args, 2, "%c", packet[i]);
                     }
                 }
+                break;
+            default:
+                print_verbosity(*args, 0, "TCP\t\t\t\t");
                 break;
             }
             // On vérifie le port destination
@@ -79,13 +93,14 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header,
             struct udphdr *udp;
             udp = (struct udphdr *)(packet);
             packet += sizeof(struct udphdr);
+
             print_verbosity(*args, 1, "UDP ");
             print_verbosity(*args, 1, "From Port : %d , ",
                             ntohs(udp->uh_sport));
             print_verbosity(*args, 1, "To Port : %d\n", ntohs(udp->uh_dport));
             // On vérifie si c'est un BOOTP
             if (ntohs(udp->uh_sport) == 67 || ntohs(udp->uh_dport) == 67) {
-                printf("BOOTP\n");
+                print_verbosity(*args, 1, "BOOTP\t\t\t\t");
                 struct bootphdr *bootp;
                 bootp = (struct bootphdr *)(packet);
                 packet += sizeof(struct bootphdr);
@@ -94,7 +109,6 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header,
                 struct vendorhdr *vendor;
                 vendor = (struct vendorhdr *)(packet);
                 while (vendor->type != 0xff) {
-                    printf("Vendor specific informations : \n");
                     vendor = (struct vendorhdr *)(packet);
                     packet += sizeof(struct vendorhdr);
 
@@ -113,14 +127,15 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header,
                     packet += vendor->len;
                     // Get data of the vendor specific informations
                     // TODO : Get only dhcp options data
-                    printf("Type : %d -> %s, Length : %d, Data : %s\n",
-                           vendor->type, get_vendor_type(vendor->type),
-                           vendor->len, trimmed_data);
+                    print_verbosity(*args, 1,
+                                    "Type : %d -> %s, Length : %d, Data : %s\n",
+                                    vendor->type, get_vendor_type(vendor->type),
+                                    vendor->len, trimmed_data);
                 }
             }
             // On vérifie si c'est un DNS
             if (ntohs(udp->uh_sport) == 53 || ntohs(udp->uh_dport) == 53) {
-                printf("DNS\n");
+                print_verbosity(*args, 1, "DNS\t\t\t\t");
                 struct dnshdr *dns;
                 dns = (struct dnshdr *)(packet);
                 packet += sizeof(struct dnshdr);
@@ -131,7 +146,7 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header,
 
                 // On vérifie si c'est une requête ou une réponse
                 if (dns->flags & 0x8000) {
-                    printf("Réponse DNS\n");
+                    print_verbosity(*args, 0, "Réponse DNS\t\t\t\t");
                     // Réponse DNS
                     // On recupere toutes les reponses
                     for (int i = 0; i < dns->qdcount; i++) {
@@ -179,14 +194,30 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header,
                     }
                 }
             }
-            break;
         }
         break;
+    case ETHERTYPE_IPV6:
+        print_verbosity(*args, 1, "IPv6 ");
+        struct ip6_hdr *ip6;
+        ip6 = (struct ip6_hdr *)(packet);
+        packet += sizeof(struct ip6_hdr);
+        char *src_ip6 = malloc(INET6_ADDRSTRLEN);
+        char *dst_ip6 = malloc(INET6_ADDRSTRLEN);
+        inet_ntop(AF_INET6, &ip6->ip6_src, src_ip6, INET6_ADDRSTRLEN);
+        inet_ntop(AF_INET6, &ip6->ip6_dst, dst_ip6, INET6_ADDRSTRLEN);
+        packet_count++;
+        print_verbosity(*args, 0, "%d\t\t\t\t\t", packet_count);
+        print_verbosity(*args, 0, "%s\t\t", src_ip6);
+        print_verbosity(*args, 0, "%s\t\t", dst_ip6);
+        break;
+
     case ETHERTYPE_ARP:
         printf("ARP\n");
         break;
+
     case ETHERTYPE_REVARP:
         printf("REVARP\n");
+
         break;
     }
     printf("\n");
@@ -213,6 +244,20 @@ void decode(char *interface, char *file, u_char verbosity) {
             panic("pcap_open_offline");
         }
 
+        // Print header in terminal for verbosity level 0
+        if (verbosity == 0) {
+            // Print header in terminal in red
+            print_verbosity(verbosity, 0, "\033[0;31m");
+            print_verbosity(verbosity, 0, "Packet number\t\t\t\t");
+            print_verbosity(verbosity, 0, "IP Source\t\t\t\t");
+            print_verbosity(verbosity, 0, "IP Destination\t\t\t\t");
+            print_verbosity(verbosity, 0, "Protocol\t\t\t\t");
+            print_verbosity(verbosity, 0, "Infos\n");
+            print_verbosity(verbosity, 0, "\033[0m");
+        }
+
         pcap_loop(handle, -1, got_packet, &verbosity);
+
+        pcap_close(handle);
     }
 }

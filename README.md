@@ -39,3 +39,4 @@ To use the programm, you must run the executable file `sniffer` with the followi
 - [ ] Decode HTTP packets.
 - [ ] Decode POP3 packets.
 - [ ] Decode IMAP packets.
+- [ ] IPv6 support.
