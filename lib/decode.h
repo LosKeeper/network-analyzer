@@ -1,4 +1,13 @@
 #pragma once
+#include "arp.h"
+#include "bootp.h"
+#include "dns.h"
+#include "ftp.h"
+#include "http.h"
+#include "smtp.h"
+#include "tcp.h"
+#include "telnet.h"
+#include "verbose.h"
 #include <ctype.h>
 #include <net/ethernet.h>
 #include <netinet/ether.h>
@@ -9,6 +18,7 @@
 #include <pcap.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 /**
  * @brief Function launced when a packet is captured

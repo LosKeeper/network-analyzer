@@ -6,7 +6,6 @@
 #include <string.h>
 
 #define FTP_PORT 21
-#define FTP_DATA_PORT 20
 
 /**
  * @brief Print and analyze FTP packet

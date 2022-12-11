@@ -4,7 +4,12 @@ int got_http(u_char *args, const u_char *packet) {
     print_verbosity(*args, 0, "HTTP\t\t\t\t");
     // Print the type of the resquest
     if (strncmp((char *)packet, "GET", 3) == 0) {
-        print_verbosity(*args, 0, "GET");
+        print_verbosity(*args, 0, "GET ");
+        int i = 4;
+        while (isprint(packet[i])) {
+            print_verbosity(*args, 0, "%c", packet[i]);
+            i++;
+        }
         return 1;
     } else if (strncmp((char *)packet, "POST", 4) == 0) {
         print_verbosity(*args, 0, "POST");
@@ -29,15 +34,6 @@ int got_http(u_char *args, const u_char *packet) {
         return 1;
     } else if (strncmp((char *)packet, "PATCH", 5) == 0) {
         print_verbosity(*args, 0, "PATCH");
-        return 1;
-    } else if (strncmp((char *)packet, "HTTP/1.1", 8) == 0) {
-        print_verbosity(*args, 0, "HTTP/1.1");
-        return 1;
-    } else if (strncmp((char *)packet, "HTTP/1.0", 8) == 0) {
-        print_verbosity(*args, 0, "HTTP/1.0");
-        return 1;
-    } else if (strncmp((char *)packet, "HTTP/2.0", 8) == 0) {
-        print_verbosity(*args, 0, "HTTP/2.0");
         return 1;
     }
     return 0;

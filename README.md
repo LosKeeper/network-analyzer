@@ -44,3 +44,4 @@ To use the programm, you must run the executable file `sniffer` with the followi
 - [x] Decode ARP packets.
 - [x] Decode Telnet packets.
 - [ ] IPv6 support.
+- [ ] All verbose modes.
