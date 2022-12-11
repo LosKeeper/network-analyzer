@@ -1,6 +1,7 @@
 #include "decode.h"
 #include "bootp.h"
 #include "dns.h"
+#include "ftp.h"
 #include "http.h"
 #include "macro.h"
 #include "smtp.h"
@@ -12,6 +13,11 @@
  * @brief Global variable to count the number of packets
  */
 int packet_count = 0;
+
+/**
+ * @brief Global variable corresponding to the port for FTP data
+ */
+int ftp_data = 0;
 
 void get_tcp(u_char *args, struct tcphdr *tcp) {
     // Si aucun port n'est reconnu, on affiche le contenu du paquet
@@ -105,6 +111,20 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header,
                     get_tcp(args, tcp);
                 }
                 goto tcp_end;
+
+            case FTP_PORT:
+                if ((ftp_data = got_ftp(args, packet, 0)) == 0) {
+                    get_tcp(args, tcp);
+                }
+                goto tcp_end;
+            }
+
+            // On gere le cas du port FTP data apart
+            if (ntohs(tcp->th_dport) == ftp_data) {
+                if (got_ftp_data(args, packet) == 0) {
+                    get_tcp(args, tcp);
+                }
+                goto tcp_end;
             }
 
             // On vérifie le port destination si le port source n'est pas
@@ -124,6 +144,20 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header,
 
             case TELNET_PORT:
                 if (got_telnet(args, packet) == 0) {
+                    get_tcp(args, tcp);
+                }
+                goto tcp_end;
+
+            case FTP_PORT:
+                if (got_ftp(args, packet, 1) == 0) {
+                    get_tcp(args, tcp);
+                }
+                goto tcp_end;
+            }
+
+            // On vérifie si c'est un FTP data
+            if (ntohs(tcp->th_sport) == ftp_data) {
+                if (got_ftp_data(args, packet) == 0) {
                     get_tcp(args, tcp);
                 }
                 goto tcp_end;

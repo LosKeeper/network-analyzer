@@ -39,6 +39,7 @@ To use the programm, you must run the executable file `sniffer` with the followi
 - [x] Decode HTTP packets.
 - [ ] Decode POP3 packets.
 - [ ] Decode IMAP packets.
-- [ ] Decode FTP packets.
+- [x] Decode FTP packets.
+- [ ] Decode ICMP packets.
 - [x] Decode Telnet packets.
 - [ ] IPv6 support.
