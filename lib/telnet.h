@@ -3,15 +3,14 @@
 #include <ctype.h>
 #include <netinet/in.h>
 #include <stdint.h>
-#include <string.h>
 
-#define HTTP_PORT 80
+#define TELNET_PORT 23
 
 /**
- * @brief Print and decode the HTTP packet
+ * @brief Print and decode a telnet packet
  *
  * @param args the verbosity level
- * @param packet the packet to analyse
+ * @param packet the packet to analyze
  * @return 1 if the function printed something, 0 otherwise
  */
-int got_http(u_char *args, const u_char *packet);
+int got_telnet(u_char *args, const u_char *packet);

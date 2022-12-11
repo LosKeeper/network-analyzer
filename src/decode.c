@@ -4,10 +4,37 @@
 #include "http.h"
 #include "macro.h"
 #include "smtp.h"
+#include "telnet.h"
 #include "verbose.h"
 #include <string.h>
 
+/**
+ * @brief Global variable to count the number of packets
+ */
 int packet_count = 0;
+
+void get_tcp(u_char *args, struct tcphdr *tcp) {
+    // Si aucun port n'est reconnu, on affiche le contenu du paquet
+    // TCP
+    if (tcp->th_flags & TH_SYN) {
+        print_verbosity(*args, 0, "SYN,");
+    }
+    if (tcp->th_flags & TH_ACK) {
+        print_verbosity(*args, 0, "ACK,");
+    }
+    if (tcp->th_flags & TH_FIN) {
+        print_verbosity(*args, 0, "FIN,");
+    }
+    if (tcp->th_flags & TH_RST) {
+        print_verbosity(*args, 0, "RST,");
+    }
+    if (tcp->th_flags & TH_PUSH) {
+        print_verbosity(*args, 0, "PUSH,");
+    }
+    if (tcp->th_flags & TH_URG) {
+        print_verbosity(*args, 0, "URG,");
+    }
+}
 
 void got_packet(u_char *args, const struct pcap_pkthdr *header,
                 const u_char *packet) {
@@ -36,14 +63,24 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header,
         // On vérifie le type de protocole
         switch (ip->ip_p) {
         case IPPROTO_TCP:
-            // print_verbosity(*args, 1, "Protocole TCP\n");
             struct tcphdr *tcp;
             tcp = (struct tcphdr *)(packet);
             packet += tcp->th_off * 4;
+            // Get the lenght of the data in the packet
+            int data_len =
+                ntohs(ip->ip_len) - (ip->ip_hl * 4) - (tcp->th_off * 4);
+            if (data_len <= 0) {
+                print_verbosity(*args, 0, "TCP\t\t\t\t");
+                get_tcp(args, tcp);
+                goto tcp_end;
+            }
+
             print_verbosity(
                 *args, 2,
-                "Port source : %d, Port destination : %d, Numéro de séquence "
-                ": %d, Numéro d'acquittement : %d, Taille de l'entête TCP : "
+                "Port source : %d, Port destination : %d, Numéro de "
+                "séquence "
+                ": %d, Numéro d'acquittement : %d, Taille de l'entête TCP "
+                ": "
                 "%d, Flags : %d, Taille de la fenêtre : %d, Somme de "
                 "contrôle : %d, Pointeur d'urgence : %d\n",
                 ntohs(tcp->th_sport), ntohs(tcp->th_dport), tcp->th_seq,
@@ -52,42 +89,46 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header,
             // On vérifie le port source
             switch (ntohs(tcp->th_sport)) {
             case SMTP_PORT:
-                print_verbosity(*args, 0, "SMTP\t\t\t\t");
-
-                print_verbosity(*args, 1, "Protocole SMTP\n");
-                print_verbosity(*args, 2, "%s", packet);
-                break;
-            case HTTP_PORT:
-                print_verbosity(*args, 0, "HTTP\t\t\t\t");
-
-                print_verbosity(*args, 1, "Protocole HTTP\n");
-                // Print only printable characters
-                for (size_t i = 0; i < strlen((char *)packet); i++) {
-                    if (isprint(packet[i])) {
-                        print_verbosity(*args, 2, "%c", packet[i]);
-                    }
+                if (got_smtp(args, packet) == 0) {
+                    get_tcp(args, tcp);
                 }
-                break;
-            default:
-                print_verbosity(*args, 0, "TCP\t\t\t\t");
-                break;
+                goto tcp_end;
+
+            case HTTP_PORT:
+                if (got_http(args, packet) == 0) {
+                    get_tcp(args, tcp);
+                }
+                goto tcp_end;
+
+            case TELNET_PORT:
+                if (got_telnet(args, packet) == 0) {
+                    get_tcp(args, tcp);
+                }
+                goto tcp_end;
             }
-            // On vérifie le port destination
+
+            // On vérifie le port destination si le port source n'est pas
+            // reconu
             switch (ntohs(tcp->th_dport)) {
             case SMTP_PORT:
-                print_verbosity(*args, 1, "Protocole SMTP\n");
-                print_verbosity(*args, 2, "%s", packet);
-                break;
-            case HTTP_PORT:
-                print_verbosity(*args, 1, "Protocole HTTP\n");
-                // Print only printable characters
-                for (size_t i = 0; i < strlen((char *)packet); i++) {
-                    if (isprint(packet[i])) {
-                        print_verbosity(*args, 2, "%c", packet[i]);
-                    }
+                if (got_smtp(args, packet) == 0) {
+                    get_tcp(args, tcp);
                 }
-                break;
+                goto tcp_end;
+
+            case HTTP_PORT:
+                if (got_http(args, packet) == 0) {
+                    get_tcp(args, tcp);
+                }
+                goto tcp_end;
+
+            case TELNET_PORT:
+                if (got_telnet(args, packet) == 0) {
+                    get_tcp(args, tcp);
+                }
+                goto tcp_end;
             }
+        tcp_end:;
             break;
         case IPPROTO_UDP:
             struct udphdr *udp;
@@ -195,6 +236,7 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header,
                 }
             }
         }
+
         break;
     case ETHERTYPE_IPV6:
         print_verbosity(*args, 1, "IPv6 ");
@@ -251,7 +293,7 @@ void decode(char *interface, char *file, u_char verbosity) {
             print_verbosity(verbosity, 0, "Packet number\t\t\t\t");
             print_verbosity(verbosity, 0, "IP Source\t\t\t\t");
             print_verbosity(verbosity, 0, "IP Destination\t\t\t\t");
-            print_verbosity(verbosity, 0, "Protocol\t\t\t\t");
+            print_verbosity(verbosity, 0, "Protocol\t\t\t");
             print_verbosity(verbosity, 0, "Infos\n");
             print_verbosity(verbosity, 0, "\033[0m");
         }

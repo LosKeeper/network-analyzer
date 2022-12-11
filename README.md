@@ -1,5 +1,5 @@
 # Analyseur Réseau 
-[![version](https://img.shields.io/badge/version-0.0.1-blue.svg)](https://github.com/LosKeeper/analyseur-reseau)
+[![version](https://img.shields.io/badge/version-0.1.5-blue.svg)](https://github.com/LosKeeper/analyseur-reseau)
 [![compiler](https://img.shields.io/badge/compiler-g++-red.svg)](https://github.com/LosKeeper/jeu-echecs-cpp/blob/main/Makefile)
 [![license](https://img.shields.io/badge/license-GPL_3.0-yellow.svg)](https://github.com/LosKeeper/analyseur-reseau/blob/main/LICENSE)
 [![author](https://img.shields.io/badge/author-LosKeeper-blue)](https://github.com/LosKeeper)
@@ -36,7 +36,9 @@ To use the programm, you must run the executable file `sniffer` with the followi
 - [x] Decode SMTP packets.
 - [ ] Print correctly the vendor infos.
 - [ ] Deocde DNS packets.
-- [ ] Decode HTTP packets.
+- [x] Decode HTTP packets.
 - [ ] Decode POP3 packets.
 - [ ] Decode IMAP packets.
+- [ ] Decode FTP packets.
+- [x] Decode Telnet packets.
 - [ ] IPv6 support.
