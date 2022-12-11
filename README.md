@@ -41,5 +41,6 @@ To use the programm, you must run the executable file `sniffer` with the followi
 - [ ] Decode IMAP packets.
 - [x] Decode FTP packets.
 - [ ] Decode ICMP packets.
+- [x] Decode ARP packets.
 - [x] Decode Telnet packets.
 - [ ] IPv6 support.

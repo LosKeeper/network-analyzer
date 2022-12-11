@@ -52,6 +52,7 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header,
                     ether_ntoa((struct ether_addr *)eth_header->ether_shost));
     print_verbosity(*args, 1, "To MAC Addr : %s\n",
                     ether_ntoa((struct ether_addr *)eth_header->ether_dhost));
+    packet_count++;
 
     // On vérifie le type de packet
     switch (htons(eth_header->ether_type)) {
@@ -60,7 +61,6 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header,
         ip = (struct ip *)(packet);
         packet += ip->ip_hl * 4;
         // print_verbosity(*args, 1, "IPv4 packet\n");
-        packet_count++;
         print_verbosity(*args, 0, "\033[0m");
 
         print_verbosity(*args, 0, "%d\t\t\t\t\t", packet_count);
@@ -288,7 +288,89 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header,
         break;
 
     case ETHERTYPE_ARP:
-        printf("ARP\n");
+        print_verbosity(*args, 0, "%d\t\t\t\t\t", packet_count);
+
+        // On recupere les addresses
+        char *src_ip = malloc(21);
+        char *dst_ip = malloc(21);
+        char *src_mac = malloc(18);
+        char *dst_mac = malloc(18);
+
+        int i = 0;
+        int j = 0;
+        while (i < 24) {
+            // Convert hexa to string
+            sprintf(src_mac + i, "%x", packet[j + 8]);
+            sprintf(src_mac + i++, "%02x", packet[j + 8]);
+            i++;
+            src_mac[i] = ':';
+            i++;
+            j++;
+        }
+        src_mac[17] = '\0';
+        i = 0;
+        j = 0;
+        while (j < 4) {
+            sprintf(src_ip + i, "%d", packet[j + 14]);
+            if (packet[j + 14] >= 10) {
+                i++;
+            }
+            if (packet[j + 14] >= 100) {
+                i++;
+            }
+            i++;
+            if (j < 3) {
+                src_ip[i] = '.';
+            }
+            i++;
+            j++;
+        }
+        src_ip[15] = '\0';
+        i = 0;
+        j = 0;
+        while (i < 24) {
+            // Convert hexa to string
+            sprintf(dst_mac + i, "%x", packet[j + 18]);
+            sprintf(dst_mac + i++, "%02x", packet[j + 18]);
+            i++;
+            dst_mac[i] = ':';
+            i++;
+            j++;
+        }
+        dst_mac[17] = '\0';
+        i = 0;
+        j = 0;
+        while (j < 4) {
+            sprintf(dst_ip + i, "%d", packet[j + 14]);
+            if (packet[j + 14] >= 10) {
+                i++;
+            }
+            if (packet[j + 14] >= 100) {
+                i++;
+            }
+            i++;
+            if (j < 3) {
+                dst_ip[i] = '.';
+            }
+            i++;
+            j++;
+        }
+        dst_ip[15] = '\0';
+
+        print_verbosity(*args, 0, "%s\t\t\t", src_mac);
+        print_verbosity(*args, 0, "%s\t\t\t", dst_mac);
+        print_verbosity(*args, 0, "ARP\t\t\t\t");
+        if (packet[8] == 0x01) {
+            print_verbosity(*args, 0, "Request -> ");
+            print_verbosity(*args, 0, "%s? ", dst_ip);
+            print_verbosity(*args, 0, "tell %s\n", src_ip);
+        } else {
+
+            print_verbosity(*args, 0, "Reply -> ");
+            print_verbosity(*args, 0, "%s? ", src_mac);
+            print_verbosity(*args, 0, "tell %s\n", src_ip);
+        }
+
         break;
 
     case ETHERTYPE_REVARP:
@@ -325,8 +407,8 @@ void decode(char *interface, char *file, u_char verbosity) {
             // Print header in terminal in red
             print_verbosity(verbosity, 0, "\033[0;31m");
             print_verbosity(verbosity, 0, "Packet number\t\t\t\t");
-            print_verbosity(verbosity, 0, "IP Source\t\t\t\t");
-            print_verbosity(verbosity, 0, "IP Destination\t\t\t\t");
+            print_verbosity(verbosity, 0, "Source\t\t\t\t\t");
+            print_verbosity(verbosity, 0, "Destination\t\t\t\t");
             print_verbosity(verbosity, 0, "Protocol\t\t\t");
             print_verbosity(verbosity, 0, "Infos\n");
             print_verbosity(verbosity, 0, "\033[0m");
