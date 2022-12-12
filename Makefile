@@ -48,6 +48,14 @@ test: $(BINDIR)/$(TARGET)
 	@echo "------------------------------------"
 	./$(BINDIR)/$(TARGET) -o test/ftp.cap -v 0
 	@echo "------------------------------------"
+	@echo "Testing DNS..."
+	@echo "------------------------------------"
+	./$(BINDIR)/$(TARGET) -o test/dns_qa.cap -v 0
+	@echo "------------------------------------"
+	@echo "Testing TELNET..."
+	@echo "------------------------------------"
+	./$(BINDIR)/$(TARGET) -o test/telnet.cap -v 0
+	@echo "------------------------------------"
 
 .PHONY: clean cov
 clean:

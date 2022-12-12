@@ -1,22 +1,4 @@
 #include "bootp.h"
-#include <arpa/inet.h>
-#include <netinet/ether.h>
-#include <stdio.h>
-
-#define SUBNET_MASK 1
-#define ROUTER 3
-#define DNS 6
-#define HOSTNAME 12
-#define DOMAINNAME 15
-#define BROADCAST 28
-#define NETBIOS_NS 44
-#define NETBIOS_SCOPE 47
-#define REQUESTED_IP 50
-#define LEASE_TIME 51
-#define MESSAGE_TYPE 53
-#define SERVER_ID 54
-#define PARAMETER_LIST 55
-#define END 255
 
 char *get_vendor_type(uint8_t type) {
     // TODO: Change for define
@@ -71,4 +53,50 @@ void print_bootp(struct bootphdr *bootp) {
            inet_ntoa(bootp->giaddr),
            ether_ntoa((struct ether_addr *)bootp->chaddr), bootp->file,
            bootp->sname);
+}
+
+int got_bootp(u_char *args, const u_char *packet) {
+    // struct bootphdr *bootp = (struct bootphdr *)(packet);
+    packet += sizeof(struct bootphdr);
+    print_verbosity(*args, 0, "BOOTP\t\t\t\t");
+    // Get the DHCP message type
+    struct vendorhdr *vendor = (struct vendorhdr *)(packet);
+    packet += sizeof(struct vendorhdr);
+    // Check if the packet is a DHCP packet
+    while (vendor->type != 255) {
+        if (vendor->type == 53) {
+            print_verbosity(*args, 0, "DHCP -> ");
+            // Get the DHCP message type
+            switch (*(packet)) {
+            case 1:
+                print_verbosity(*args, 0, "Discover\t\t\t");
+                break;
+            case 2:
+                print_verbosity(*args, 0, "Offer\t\t\t\t");
+                break;
+            case 3:
+                print_verbosity(*args, 0, "Request\t\t\t\t");
+                break;
+            case 4:
+                print_verbosity(*args, 0, "Decline\t\t\t\t");
+                break;
+            case 5:
+                print_verbosity(*args, 0, "Ack\t\t\t\t");
+                break;
+            case 6:
+                print_verbosity(*args, 0, "Nack\t\t\t\t");
+                break;
+            case 7:
+                print_verbosity(*args, 0, "Release\t\t\t\t");
+                break;
+            case 8:
+                print_verbosity(*args, 0, "Inform\t\t\t\t");
+                break;
+            }
+        }
+        vendor = (struct vendorhdr *)(packet);
+        packet += sizeof(struct vendorhdr);
+        packet += vendor->len;
+    }
+    return 1;
 }

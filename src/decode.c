@@ -85,6 +85,12 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header,
                     get_tcp(args, tcp);
                 }
                 goto tcp_end;
+
+            case DNS_PORT:
+                if (got_dns(args, packet) == 0) {
+                    get_tcp(args, tcp);
+                }
+                goto tcp_end;
             }
 
             // On gere le cas du port FTP data apart
@@ -121,6 +127,12 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header,
                     get_tcp(args, tcp);
                 }
                 goto tcp_end;
+
+            case DNS_PORT:
+                if (got_dns(args, packet) == 0) {
+                    get_tcp(args, tcp);
+                }
+                goto tcp_end;
             }
 
             // On vérifie si c'est un FTP data
@@ -141,104 +153,31 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header,
             print_verbosity(*args, 1, "From Port : %d , ",
                             ntohs(udp->uh_sport));
             print_verbosity(*args, 1, "To Port : %d\n", ntohs(udp->uh_dport));
-            // On vérifie si c'est un BOOTP
-            if (ntohs(udp->uh_sport) == 67 || ntohs(udp->uh_dport) == 67) {
-                print_verbosity(*args, 1, "BOOTP\t\t\t\t");
-                struct bootphdr *bootp;
-                bootp = (struct bootphdr *)(packet);
-                packet += sizeof(struct bootphdr);
-                print_bootp(bootp);
-                // Vendor specific informations
-                struct vendorhdr *vendor;
-                vendor = (struct vendorhdr *)(packet);
-                while (vendor->type != 0xff) {
-                    vendor = (struct vendorhdr *)(packet);
-                    packet += sizeof(struct vendorhdr);
 
-                    // Trim the data to print only the useful informations
-                    char *trimmed_data = malloc(vendor->len);
-                    int i = 0;
-                    while (i < vendor->len) {
-                        if (isprint(packet[i])) {
-                            trimmed_data[i] = packet[i];
-                        } else {
-                            trimmed_data[i] = ' ';
-                        }
-                        i++;
-                    }
+            // On vérifie le port source
+            switch (ntohs(udp->uh_sport)) {
+            case DNS_PORT:
+                got_dns(args, packet);
+                goto udp_end;
 
-                    packet += vendor->len;
-                    // Get data of the vendor specific informations
-                    // TODO : Get only dhcp options data
-                    print_verbosity(*args, 1,
-                                    "Type : %d -> %s, Length : %d, Data : %s\n",
-                                    vendor->type, get_vendor_type(vendor->type),
-                                    vendor->len, trimmed_data);
-                }
+            case BOOTP_PORT:
+                got_bootp(args, packet);
+                goto udp_end;
             }
-            // On vérifie si c'est un DNS
-            if (ntohs(udp->uh_sport) == 53 || ntohs(udp->uh_dport) == 53) {
-                print_verbosity(*args, 1, "DNS\t\t\t\t");
-                struct dnshdr *dns;
-                dns = (struct dnshdr *)(packet);
-                packet += sizeof(struct dnshdr);
-                printf("ID : %d, Flags : %d, Questions : %d, Réponses : %d, "
-                       "Autorités : %d, Supplémentaires : %d\n",
-                       dns->id, dns->flags, dns->qdcount, dns->ancount,
-                       dns->nscount, dns->arcount);
 
-                // On vérifie si c'est une requête ou une réponse
-                if (dns->flags & 0x8000) {
-                    print_verbosity(*args, 0, "Réponse DNS\t\t\t\t");
-                    // Réponse DNS
-                    // On recupere toutes les reponses
-                    for (int i = 0; i < dns->qdcount; i++) {
-                        printf("Question : ");
-                        uint8_t len;
-                        while ((len = *(uint8_t *)packet) != 0) {
-                            packet += sizeof(len);
-                            char *data = malloc(len);
-                            data = (char *)(packet);
-                            packet += len;
-                            printf("%s.", data);
-                        }
-                        // printf("\n");
-                        // struct dnsanswer *dnsans;
-                        // dnsans = (struct dnsanswer *)(packet);
-                        // packet += sizeof(struct dnsanswer);
-                        // printf("Type : %d, Class : %d, TTL : %d, Data
-                        // length : "
-                        //        "%d, IP : %s\n",
-                        //        dnsans->type, dnsans->class, dnsans->ttl,
-                        //        dnsans->rdlength,
-                        //        inet_ntoa(dnsans->rdata));
-                    }
+            // On vérifie le port destination
+            switch (ntohs(udp->uh_dport)) {
+            case DNS_PORT:
+                got_dns(args, packet);
+                goto udp_end;
 
-                } else {
-                    printf("Requête DNS\n");
-                    // Requête DNS
-                    // On recupere toutes les questions
-                    for (int i = 0; i < dns->qdcount; i++) {
-                        printf("Réponse : ");
-                        uint8_t len;
-                        while ((len = *(uint8_t *)packet) != 0) {
-                            packet += sizeof(len);
-                            char *data = malloc(len);
-                            data = (char *)(packet);
-                            packet += len;
-                            printf("%s.", data);
-                        }
-                        // printf("\n");
-                        // struct dnsquestion *dnsq;
-                        // dnsq = (struct dnsquestion *)(packet);
-                        // packet += sizeof(struct dnsquestion);
-                        // printf("Type : %d, Class : %d\n", dnsq->qtype,
-                        //        dnsq->qclass);
-                    }
-                }
+            case BOOTP_PORT:
+                got_bootp(args, packet);
+                goto udp_end;
             }
         }
 
+    udp_end:;
         break;
     case ETHERTYPE_IPV6:
         print_verbosity(*args, 1, "IPv6 ");
@@ -252,6 +191,116 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header,
         print_verbosity(*args, 0, "%d\t\t\t\t", packet_count);
         print_verbosity(*args, 0, "%s\t\t", src_ip6);
         print_verbosity(*args, 0, "%s\t\t", dst_ip6);
+
+        switch (ip6->ip6_nxt) {
+        case IPPROTO_TCP:
+            struct tcphdr *tcp;
+            tcp = (struct tcphdr *)(packet);
+            packet += sizeof(struct tcphdr);
+
+            print_verbosity(*args, 1, "TCP ");
+            print_verbosity(*args, 1, "From Port : %d , ",
+                            ntohs(tcp->th_sport));
+            print_verbosity(*args, 1, "To Port : %d\n", ntohs(tcp->th_dport));
+
+            // On vérifie le port source
+            switch (ntohs(tcp->th_sport)) {
+            case SMTP_PORT:
+                if (got_smtp(args, packet) == 0) {
+                    get_tcp(args, tcp);
+                }
+                goto tcp6_end;
+
+            case HTTP_PORT:
+                if (got_http(args, packet) == 0) {
+                    get_tcp(args, tcp);
+                }
+                goto tcp6_end;
+
+            case TELNET_PORT:
+                if (got_telnet(args, packet) == 0) {
+                    get_tcp(args, tcp);
+                }
+                goto tcp6_end;
+
+            case FTP_PORT:
+                if ((ftp_data = got_ftp(args, packet, 0)) == 0) {
+                    get_tcp(args, tcp);
+                }
+                goto tcp6_end;
+            }
+
+            // On gere le cas du port FTP data apart
+            if (ntohs(tcp->th_dport) == ftp_data) {
+                if (got_ftp_data(args, packet) == 0) {
+                    get_tcp(args, tcp);
+                }
+                goto tcp6_end;
+            }
+
+            // On vérifie le port destination si le port source n'est pas
+            // reconu
+            switch (ntohs(tcp->th_dport)) {
+            case SMTP_PORT:
+                if (got_smtp(args, packet) == 0) {
+                    get_tcp(args, tcp);
+                }
+                goto tcp6_end;
+
+            case HTTP_PORT:
+                if (got_http(args, packet) == 0) {
+                    get_tcp(args, tcp);
+                }
+                goto tcp6_end;
+
+            case TELNET_PORT:
+                if (got_telnet(args, packet) == 0) {
+                    get_tcp(args, tcp);
+                }
+                goto tcp6_end;
+
+            case FTP_PORT:
+                if (got_ftp(args, packet, 1) == 0) {
+                    get_tcp(args, tcp);
+                }
+                goto tcp6_end;
+            }
+        tcp6_end:;
+            break;
+
+        case IPPROTO_UDP:
+            struct udphdr *udp;
+            udp = (struct udphdr *)(packet);
+            packet += sizeof(struct udphdr);
+
+            print_verbosity(*args, 1, "UDP ");
+            print_verbosity(*args, 1, "From Port : %d , ",
+                            ntohs(udp->uh_sport));
+            print_verbosity(*args, 1, "To Port : %d\n", ntohs(udp->uh_dport));
+
+            // On vérifie le port source
+            switch (ntohs(udp->uh_sport)) {
+            case DNS_PORT:
+                got_dns(args, packet);
+                goto udp6_end;
+
+            case BOOTP_PORT:
+                got_bootp(args, packet);
+                goto udp6_end;
+            }
+
+            // On vérifie le port destination
+            switch (ntohs(udp->uh_dport)) {
+            case DNS_PORT:
+                got_dns(args, packet);
+                goto udp6_end;
+
+            case BOOTP_PORT:
+                got_bootp(args, packet);
+                goto udp6_end;
+            }
+        }
+    udp6_end:;
         break;
 
     case ETHERTYPE_ARP:
@@ -265,9 +314,7 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header,
 void decode(char *interface, char *file, u_char verbosity) {
     if (interface) {
         pcap_t *handle;
-        // struct bpf_program *fp;
         char errbuf[PCAP_ERRBUF_SIZE];
-        // bpf_u_int32 netmask;
 
         if ((handle = pcap_open_live(interface, BUFSIZ, 1, 1000, errbuf)) ==
             NULL) {

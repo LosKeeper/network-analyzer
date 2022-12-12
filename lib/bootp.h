@@ -1,6 +1,12 @@
 #pragma once
+#include "verbose.h"
+#include <arpa/inet.h>
+#include <netinet/ether.h>
 #include <netinet/in.h>
 #include <stdint.h>
+#include <stdio.h>
+
+#define BOOTP_PORT 67
 
 struct bootphdr {
     uint8_t op;             // 1 = BOOTREQUEST, 2 = BOOTREPLY
@@ -39,3 +45,5 @@ char *get_vendor_type(uint8_t type);
  * @param bootp
  */
 void print_bootp(struct bootphdr *bootp);
+
+int got_bootp(u_char *args, const u_char *packet);

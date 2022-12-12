@@ -1,5 +1,13 @@
 #pragma once
+#include "verbose.h"
+#include <arpa/inet.h>
+#include <netinet/ether.h>
+#include <netinet/in.h>
 #include <stdint.h>
+#include <stdio.h>
+#include <string.h>
+
+#define DNS_PORT 53
 
 struct dnshdr {
     uint16_t id;
@@ -16,9 +24,12 @@ struct dnsquestion {
 };
 
 struct dnsanswer {
+    uint16_t name;
     uint16_t type;
     uint16_t class;
-    uint32_t ttl;
+    uint16_t ttl;
+    uint8_t nothing;
     uint16_t rdlength;
-    struct in_addr rdata;
 };
+
+int got_dns(u_char *args, const u_char *packet);
