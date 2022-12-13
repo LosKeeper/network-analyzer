@@ -5,8 +5,10 @@
 #include <netinet/in.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 
-#define BOOTP_PORT 67
+#define BOOTP_PORT_CLIENT 68
+#define BOOTP_PORT_SERVER 67
 
 struct bootphdr {
     uint8_t op;             // 1 = BOOTREQUEST, 2 = BOOTREPLY

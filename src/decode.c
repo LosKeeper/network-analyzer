@@ -9,7 +9,7 @@ int packet_count = 0;
 /**
  * @brief Global variable corresponding to the port for FTP data
  */
-int ftp_data = 25;
+int ftp_data = 20;
 
 void got_packet(u_char *args, const struct pcap_pkthdr *header,
                 const u_char *packet) {
@@ -94,7 +94,7 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header,
                 goto tcp_end;
 
             case TELNET_PORT:
-                if (got_telnet(args, packet) == 0) {
+                if (got_telnet(args, packet, data_len) == 0) {
                     get_tcp(args, tcp);
                 }
                 goto tcp_end;
@@ -161,7 +161,7 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header,
                 goto tcp_end;
 
             case TELNET_PORT:
-                if (got_telnet(args, packet) == 0) {
+                if (got_telnet(args, packet, data_len) == 0) {
                     get_tcp(args, tcp);
                 }
                 goto tcp_end;
@@ -228,7 +228,11 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header,
                 got_dns(args, packet);
                 goto udp_end;
 
-            case BOOTP_PORT:
+            case BOOTP_PORT_CLIENT:
+                got_bootp(args, packet);
+                goto udp_end;
+
+            case BOOTP_PORT_SERVER:
                 got_bootp(args, packet);
                 goto udp_end;
             }
@@ -239,7 +243,11 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header,
                 got_dns(args, packet);
                 goto udp_end;
 
-            case BOOTP_PORT:
+            case BOOTP_PORT_CLIENT:
+                got_bootp(args, packet);
+                goto udp_end;
+
+            case BOOTP_PORT_SERVER:
                 got_bootp(args, packet);
                 goto udp_end;
             }
@@ -271,6 +279,8 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header,
                             ntohs(tcp->th_sport));
             print_verbosity(*args, 1, "To Port : %d\n", ntohs(tcp->th_dport));
 
+            int data_len = ntohs(ip6->ip6_plen) - sizeof(struct tcphdr);
+
             // On vérifie le port source
             switch (ntohs(tcp->th_sport)) {
             case SMTP_PORT:
@@ -286,7 +296,7 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header,
                 goto tcp6_end;
 
             case TELNET_PORT:
-                if (got_telnet(args, packet) == 0) {
+                if (got_telnet(args, packet, data_len) == 0) {
                     get_tcp(args, tcp);
                 }
                 goto tcp6_end;
@@ -346,7 +356,7 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header,
                 goto tcp6_end;
 
             case TELNET_PORT:
-                if (got_telnet(args, packet) == 0) {
+                if (got_telnet(args, packet, data_len) == 0) {
                     get_tcp(args, tcp);
                 }
                 goto tcp6_end;
@@ -409,7 +419,11 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header,
                 got_dns(args, packet);
                 goto udp6_end;
 
-            case BOOTP_PORT:
+            case BOOTP_PORT_CLIENT:
+                got_bootp(args, packet);
+                goto udp6_end;
+
+            case BOOTP_PORT_SERVER:
                 got_bootp(args, packet);
                 goto udp6_end;
             }
@@ -420,7 +434,11 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header,
                 got_dns(args, packet);
                 goto udp6_end;
 
-            case BOOTP_PORT:
+            case BOOTP_PORT_CLIENT:
+                got_bootp(args, packet);
+                goto udp6_end;
+
+            case BOOTP_PORT_SERVER:
                 got_bootp(args, packet);
                 goto udp6_end;
             }

@@ -68,17 +68,33 @@ void get_arp(u_char *args, const u_char *packet) {
     }
     dst_ip[15] = '\0';
 
+    // Verbose 0
     print_verbosity(*args, 0, "%s\t\t\t", src_mac);
     print_verbosity(*args, 0, "%s\t\t\t", dst_mac);
     print_verbosity(*args, 0, "ARP\t\t\t\t");
+
+    // Verbose 1
+    print_verbosity(*args, 1, "\033[32m");
+    print_verbosity(*args, 1, "ARP : ");
+    print_verbosity(*args, 1, "\033[0m");
+    print_verbosity(*args, 1, "from %s", src_mac);
+    print_verbosity(*args, 1, " to %s ", dst_mac);
     if (packet[8] == 0x01) {
         print_verbosity(*args, 0, "Request -> ");
         print_verbosity(*args, 0, "%s ? ", dst_ip);
         print_verbosity(*args, 0, "tell %s", src_ip);
-    } else {
 
+        print_verbosity(*args, 1, "\nRequest -> ");
+        print_verbosity(*args, 1, "%s ? ", dst_ip);
+        print_verbosity(*args, 1, "tell %s", src_ip);
+    } else {
         print_verbosity(*args, 0, "Reply -> ");
         print_verbosity(*args, 0, "%s ? ", src_mac);
         print_verbosity(*args, 0, "tell %s", src_ip);
+
+        print_verbosity(*args, 1, "\nReply -> ");
+        print_verbosity(*args, 1, "%s ? ", src_mac);
+        print_verbosity(*args, 1, "tell %s", src_ip);
     }
+    print_verbosity(*args, 1, "\n");
 }

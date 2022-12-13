@@ -57,6 +57,7 @@ int got_http(u_char *args, const u_char *packet) {
             print_verbosity(*args, 1, "\033[0m");
             print_verbosity(*args, 1, "%s\n", buff);
         }
+        free(buff);
         return 1;
     }
     return 0;
