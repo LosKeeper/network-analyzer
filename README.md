@@ -35,13 +35,15 @@ To use the programm, you must run the executable file `sniffer` with the followi
 - [x] Verbose mode.
 - [x] Decode SMTP packets.
 - [ ] Print correctly the vendor infos.
-- [ ] Deocde DNS packets.
+- [x] Deocde DNS packets.
 - [x] Decode HTTP packets.
-- [ ] Decode POP3 packets.
-- [ ] Decode IMAP packets.
+- [x] Decode POP3 packets.
+- [x] Decode IMAP packets.
 - [x] Decode FTP packets.
-- [ ] Decode ICMP packets.
+- [x] Decode ARP packets.
 - [x] Decode ARP packets.
 - [x] Decode Telnet packets.
-- [ ] IPv6 support.
+- [x] IPv6 support.
 - [ ] All verbose modes.
+- [ ] Correct the bug with pcap_live_open.
+- [ ] Another IPV6 packet.

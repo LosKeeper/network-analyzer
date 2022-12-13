@@ -1,6 +1,7 @@
 #pragma once
 #include "verbose.h"
 #include <arpa/inet.h>
+#include <ctype.h>
 #include <netinet/ether.h>
 #include <netinet/in.h>
 #include <stdint.h>

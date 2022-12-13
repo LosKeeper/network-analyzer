@@ -4,6 +4,8 @@
 #include "dns.h"
 #include "ftp.h"
 #include "http.h"
+#include "imap.h"
+#include "pop3.h"
 #include "smtp.h"
 #include "tcp.h"
 #include "telnet.h"

@@ -17,11 +17,20 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header,
     struct ether_header *eth_header;
     eth_header = (struct ether_header *)packet;
     packet += sizeof(struct ether_header);
-    print_verbosity(*args, 1, "From MAC Addr : %s , ",
-                    ether_ntoa((struct ether_addr *)eth_header->ether_shost));
-    print_verbosity(*args, 1, "To MAC Addr : %s\n",
-                    ether_ntoa((struct ether_addr *)eth_header->ether_dhost));
     packet_count++;
+
+    // Verbose 1
+    print_verbosity(*args, 1,
+                    "--------------------------------------------------"
+                    "--------------------------\n");
+    print_verbosity(*args, 1, "\033[31m");
+    print_verbosity(*args, 1, "Packet number : %d\n", packet_count);
+    print_verbosity(*args, 1, "\033[32m");
+    print_verbosity(*args, 1, "Ethernet : ");
+    print_verbosity(*args, 1, "\033[0m");
+    print_verbosity(*args, 1, "Source : %s, Destination : %s\n",
+                    ether_ntoa((struct ether_addr *)eth_header->ether_shost),
+                    ether_ntoa((struct ether_addr *)eth_header->ether_dhost));
 
     // On vérifie le type de packet
     switch (htons(eth_header->ether_type)) {
@@ -29,17 +38,38 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header,
         struct ip *ip;
         ip = (struct ip *)(packet);
         packet += ip->ip_hl * 4;
-        // print_verbosity(*args, 1, "IPv4 packet\n");
 
+        // Verbose 0
         print_verbosity(*args, 0, "%d\t\t\t\t", packet_count);
         print_verbosity(*args, 0, "%s\t\t\t\t", inet_ntoa(ip->ip_src));
         print_verbosity(*args, 0, "%s\t\t\t\t", inet_ntoa(ip->ip_dst));
+
+        // Verbose 1
+        print_verbosity(*args, 1, "\033[32m");
+        print_verbosity(*args, 1, "IP : ");
+        print_verbosity(*args, 1, "\033[0m");
+        print_verbosity(*args, 1,
+                        "Version : %d, Source : %s, Destination : "
+                        "%s, Type de protocole : %d\n",
+                        ip->ip_v, inet_ntoa(ip->ip_src), inet_ntoa(ip->ip_dst),
+                        ip->ip_p);
         // On vérifie le type de protocole
         switch (ip->ip_p) {
         case IPPROTO_TCP:
             struct tcphdr *tcp;
             tcp = (struct tcphdr *)(packet);
             packet += tcp->th_off * 4;
+
+            // Verbose 1
+            print_verbosity(*args, 1, "\033[32m");
+            print_verbosity(*args, 1, "TCP : ");
+            print_verbosity(*args, 1, "\033[0m");
+            print_verbosity(
+                *args, 1,
+                "Source : %d on port %d, Destination : %d on port %d\n",
+                ntohs(ip->ip_src.s_addr), ntohs(tcp->th_sport),
+                ntohs(ip->ip_dst.s_addr), ntohs(tcp->th_dport));
+
             // Get the lenght of the data in the packet
             int data_len =
                 ntohs(ip->ip_len) - (ip->ip_hl * 4) - (tcp->th_off * 4);
@@ -49,17 +79,6 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header,
                 goto tcp_end;
             }
 
-            print_verbosity(
-                *args, 2,
-                "Port source : %d, Port destination : %d, Numéro de "
-                "séquence "
-                ": %d, Numéro d'acquittement : %d, Taille de l'entête TCP "
-                ": "
-                "%d, Flags : %d, Taille de la fenêtre : %d, Somme de "
-                "contrôle : %d, Pointeur d'urgence : %d\n",
-                ntohs(tcp->th_sport), ntohs(tcp->th_dport), tcp->th_seq,
-                tcp->th_ack, tcp->th_off, tcp->th_flags, tcp->th_win,
-                tcp->th_sum, tcp->th_urp);
             // On vérifie le port source
             switch (ntohs(tcp->th_sport)) {
             case SMTP_PORT:
@@ -81,6 +100,7 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header,
                 goto tcp_end;
 
             case FTP_PORT:
+                // printf("FTP_PORT");
                 if ((ftp_data = got_ftp(args, packet, 0)) == 0) {
                     get_tcp(args, tcp);
                 }
@@ -88,6 +108,30 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header,
 
             case DNS_PORT:
                 if (got_dns(args, packet) == 0) {
+                    get_tcp(args, tcp);
+                }
+                goto tcp_end;
+
+            case POP3_PORT:
+                if (get_pop3(args, packet) == 0) {
+                    get_tcp(args, tcp);
+                }
+                goto tcp_end;
+
+            case POP3S_PORT:
+                if (get_pop3(args, packet) == 0) {
+                    get_tcp(args, tcp);
+                }
+                goto tcp_end;
+
+            case IMAP_PORT:
+                if (get_imap(args, packet) == 0) {
+                    get_tcp(args, tcp);
+                }
+                goto tcp_end;
+
+            case IMAP_SSL_PORT:
+                if (get_imap(args, packet) == 0) {
                     get_tcp(args, tcp);
                 }
                 goto tcp_end;
@@ -123,13 +167,37 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header,
                 goto tcp_end;
 
             case FTP_PORT:
-                if (got_ftp(args, packet, 1) == 0) {
+                if ((ftp_data = got_ftp(args, packet, 1)) == 0) {
                     get_tcp(args, tcp);
                 }
                 goto tcp_end;
 
             case DNS_PORT:
                 if (got_dns(args, packet) == 0) {
+                    get_tcp(args, tcp);
+                }
+                goto tcp_end;
+
+            case POP3_PORT:
+                if (get_pop3(args, packet) == 0) {
+                    get_tcp(args, tcp);
+                }
+                goto tcp_end;
+
+            case POP3S_PORT:
+                if (get_pop3(args, packet) == 0) {
+                    get_tcp(args, tcp);
+                }
+                goto tcp_end;
+
+            case IMAP_PORT:
+                if (get_imap(args, packet) == 0) {
+                    get_tcp(args, tcp);
+                }
+                goto tcp_end;
+
+            case IMAP_SSL_PORT:
+                if (get_imap(args, packet) == 0) {
                     get_tcp(args, tcp);
                 }
                 goto tcp_end;
@@ -228,6 +296,30 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header,
                     get_tcp(args, tcp);
                 }
                 goto tcp6_end;
+
+            case POP3_PORT:
+                if (get_pop3(args, packet) == 0) {
+                    get_tcp(args, tcp);
+                }
+                goto tcp6_end;
+
+            case POP3S_PORT:
+                if (get_pop3(args, packet) == 0) {
+                    get_tcp(args, tcp);
+                }
+                goto tcp6_end;
+
+            case IMAP_PORT:
+                if (get_imap(args, packet) == 0) {
+                    get_tcp(args, tcp);
+                }
+                goto tcp6_end;
+
+            case IMAP_SSL_PORT:
+                if (get_imap(args, packet) == 0) {
+                    get_tcp(args, tcp);
+                }
+                goto tcp6_end;
             }
 
             // On gere le cas du port FTP data apart
@@ -260,11 +352,44 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header,
                 goto tcp6_end;
 
             case FTP_PORT:
-                if (got_ftp(args, packet, 1) == 0) {
+                if ((ftp_data = got_ftp(args, packet, 1)) == 0) {
+                    get_tcp(args, tcp);
+                }
+                goto tcp6_end;
+
+            case POP3_PORT:
+                if (get_pop3(args, packet) == 0) {
+                    get_tcp(args, tcp);
+                }
+                goto tcp6_end;
+
+            case POP3S_PORT:
+                if (get_pop3(args, packet) == 0) {
+                    get_tcp(args, tcp);
+                }
+                goto tcp6_end;
+
+            case IMAP_PORT:
+                if (get_imap(args, packet) == 0) {
+                    get_tcp(args, tcp);
+                }
+                goto tcp6_end;
+
+            case IMAP_SSL_PORT:
+                if (get_imap(args, packet) == 0) {
                     get_tcp(args, tcp);
                 }
                 goto tcp6_end;
             }
+
+            // On gere le cas du port FTP data a part
+            if (ntohs(tcp->th_sport) == ftp_data) {
+                if (got_ftp_data(args, packet) == 0) {
+                    get_tcp(args, tcp);
+                }
+                goto tcp6_end;
+            }
+
         tcp6_end:;
             break;
 
@@ -321,7 +446,9 @@ void decode(char *interface, char *file, u_char verbosity) {
             panic("pcap_open_live");
         }
 
-        pcap_loop(handle, -1, got_packet, NULL);
+        pcap_loop(handle, -1, got_packet, &verbosity);
+
+        pcap_close(handle);
     } else {
         pcap_t *handle;
         char errbuf[PCAP_ERRBUF_SIZE];

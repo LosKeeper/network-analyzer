@@ -2,12 +2,19 @@
 
 int got_ftp(u_char *args, const u_char *packet, int req) {
     print_verbosity(*args, 0, "FTP\t\t\t\t");
+
+    print_verbosity(*args, 1, "\033[32m");
+    print_verbosity(*args, 1, "FTP : ");
+    print_verbosity(*args, 1, "\033[0m");
     if (req) {
         print_verbosity(*args, 0, "Request -> ");
+        print_verbosity(*args, 1, "Request -> ");
     } else {
         print_verbosity(*args, 0, "Response -> ");
+        print_verbosity(*args, 1, "Response -> ");
     }
     // Print the type of the resquest
+    // Switch case for verboses modes
     if (strncmp((char *)packet, "USER", 4) == 0) {
         print_verbosity(*args, 0, "USER : ");
         int i = 5;
