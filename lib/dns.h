@@ -33,4 +33,4 @@ struct dnsanswer {
     uint16_t rdlength;
 };
 
-int got_dns(u_char *args, const u_char *packet);
+int got_dns(u_char *args, const u_char *packet, int data_len);

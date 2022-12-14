@@ -62,3 +62,22 @@ int got_http(u_char *args, const u_char *packet) {
     }
     return 0;
 }
+
+int got_https(u_char *args, const u_char *packet) {
+    (void)packet;
+    switch (*args) {
+    case 0:
+        print_verbosity(*args, 0, "HTTPS\t\t\t\t");
+        print_verbosity(*args, 0, "Encrypted packet");
+        return 1;
+
+    case 1:
+        print_verbosity(*args, 1, "\033[32m");
+        print_verbosity(*args, 1, "HTTPS : ");
+        print_verbosity(*args, 1, "\033[0m");
+        print_verbosity(*args, 1, "Encrypted packet\n");
+
+        return 1;
+    }
+    return 0;
+}

@@ -82,13 +82,19 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header,
             // On vérifie le port source
             switch (ntohs(tcp->th_sport)) {
             case SMTP_PORT:
-                if (got_smtp(args, packet) == 0) {
+                if (got_smtp(args, packet, data_len) == 0) {
                     get_tcp(args, tcp);
                 }
                 goto tcp_end;
 
             case HTTP_PORT:
                 if (got_http(args, packet) == 0) {
+                    get_tcp(args, tcp);
+                }
+                goto tcp_end;
+
+            case HTTPS_PORT:
+                if (got_https(args, packet) == 0) {
                     get_tcp(args, tcp);
                 }
                 goto tcp_end;
@@ -107,7 +113,7 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header,
                 goto tcp_end;
 
             case DNS_PORT:
-                if (got_dns(args, packet) == 0) {
+                if (got_dns(args, packet, data_len) == 0) {
                     get_tcp(args, tcp);
                 }
                 goto tcp_end;
@@ -149,13 +155,19 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header,
             // reconu
             switch (ntohs(tcp->th_dport)) {
             case SMTP_PORT:
-                if (got_smtp(args, packet) == 0) {
+                if (got_smtp(args, packet, data_len) == 0) {
                     get_tcp(args, tcp);
                 }
                 goto tcp_end;
 
             case HTTP_PORT:
                 if (got_http(args, packet) == 0) {
+                    get_tcp(args, tcp);
+                }
+                goto tcp_end;
+
+            case HTTPS_PORT:
+                if (got_https(args, packet) == 0) {
                     get_tcp(args, tcp);
                 }
                 goto tcp_end;
@@ -173,7 +185,7 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header,
                 goto tcp_end;
 
             case DNS_PORT:
-                if (got_dns(args, packet) == 0) {
+                if (got_dns(args, packet, data_len) == 0) {
                     get_tcp(args, tcp);
                 }
                 goto tcp_end;
@@ -217,15 +229,20 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header,
             udp = (struct udphdr *)(packet);
             packet += sizeof(struct udphdr);
 
-            print_verbosity(*args, 1, "UDP ");
-            print_verbosity(*args, 1, "From Port : %d , ",
-                            ntohs(udp->uh_sport));
-            print_verbosity(*args, 1, "To Port : %d\n", ntohs(udp->uh_dport));
+            // Verbose 1
+            print_verbosity(*args, 1, "\033[32m");
+            print_verbosity(*args, 1, "UDP : ");
+            print_verbosity(*args, 1, "\033[0m");
+            print_verbosity(*args, 1,
+                            "Source port : %d, Destination port : %d\n",
+                            ntohs(udp->uh_sport), ntohs(udp->uh_dport));
+
+            int data_len_udp = ntohs(udp->uh_ulen) - sizeof(struct udphdr);
 
             // On vérifie le port source
             switch (ntohs(udp->uh_sport)) {
             case DNS_PORT:
-                got_dns(args, packet);
+                got_dns(args, packet, data_len_udp);
                 goto udp_end;
 
             case BOOTP_PORT_CLIENT:
@@ -240,7 +257,7 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header,
             // On vérifie le port destination
             switch (ntohs(udp->uh_dport)) {
             case DNS_PORT:
-                got_dns(args, packet);
+                got_dns(args, packet, data_len_udp);
                 goto udp_end;
 
             case BOOTP_PORT_CLIENT:
@@ -251,9 +268,10 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header,
                 got_bootp(args, packet);
                 goto udp_end;
             }
+        udp_end:;
+            break;
         }
 
-    udp_end:;
         break;
     case ETHERTYPE_IPV6:
         print_verbosity(*args, 1, "IPv6 ");
@@ -281,16 +299,32 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header,
 
             int data_len = ntohs(ip6->ip6_plen) - sizeof(struct tcphdr);
 
+            // Verbose 1
+            print_verbosity(*args, 1, "\033[32m");
+            print_verbosity(*args, 1, "TCP : ");
+            print_verbosity(*args, 1, "\033[0m");
+            print_verbosity(
+                *args, 1,
+                "Source : %d on port %d, Destination : %d on port %d\n",
+                ntohl(ip6->ip6_src.s6_addr32[3]), ntohs(tcp->th_sport),
+                ntohl(ip6->ip6_dst.s6_addr32[3]), ntohs(tcp->th_dport));
+
             // On vérifie le port source
             switch (ntohs(tcp->th_sport)) {
             case SMTP_PORT:
-                if (got_smtp(args, packet) == 0) {
+                if (got_smtp(args, packet, data_len) == 0) {
                     get_tcp(args, tcp);
                 }
                 goto tcp6_end;
 
             case HTTP_PORT:
                 if (got_http(args, packet) == 0) {
+                    get_tcp(args, tcp);
+                }
+                goto tcp6_end;
+
+            case HTTPS_PORT:
+                if (got_https(args, packet) == 0) {
                     get_tcp(args, tcp);
                 }
                 goto tcp6_end;
@@ -344,13 +378,19 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header,
             // reconu
             switch (ntohs(tcp->th_dport)) {
             case SMTP_PORT:
-                if (got_smtp(args, packet) == 0) {
+                if (got_smtp(args, packet, data_len) == 0) {
                     get_tcp(args, tcp);
                 }
                 goto tcp6_end;
 
             case HTTP_PORT:
                 if (got_http(args, packet) == 0) {
+                    get_tcp(args, tcp);
+                }
+                goto tcp6_end;
+
+            case HTTPS_PORT:
+                if (got_https(args, packet) == 0) {
                     get_tcp(args, tcp);
                 }
                 goto tcp6_end;
@@ -408,15 +448,20 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header,
             udp = (struct udphdr *)(packet);
             packet += sizeof(struct udphdr);
 
-            print_verbosity(*args, 1, "UDP ");
-            print_verbosity(*args, 1, "From Port : %d , ",
-                            ntohs(udp->uh_sport));
-            print_verbosity(*args, 1, "To Port : %d\n", ntohs(udp->uh_dport));
+            // Verbose 1
+            print_verbosity(*args, 1, "\033[32m");
+            print_verbosity(*args, 1, "UDP : ");
+            print_verbosity(*args, 1, "\033[0m");
+            print_verbosity(*args, 1,
+                            "Source port : %d, Destination port : %d\n",
+                            ntohs(udp->uh_sport), ntohs(udp->uh_dport));
+
+            int data_len_udp = ntohs(udp->uh_ulen) - sizeof(struct udphdr);
 
             // On vérifie le port source
             switch (ntohs(udp->uh_sport)) {
             case DNS_PORT:
-                got_dns(args, packet);
+                got_dns(args, packet, data_len_udp);
                 goto udp6_end;
 
             case BOOTP_PORT_CLIENT:
@@ -431,7 +476,7 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header,
             // On vérifie le port destination
             switch (ntohs(udp->uh_dport)) {
             case DNS_PORT:
-                got_dns(args, packet);
+                got_dns(args, packet, data_len_udp);
                 goto udp6_end;
 
             case BOOTP_PORT_CLIENT:

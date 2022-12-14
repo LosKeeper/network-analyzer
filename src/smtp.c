@@ -1,6 +1,6 @@
 #include "smtp.h"
 
-int got_smtp(u_char *args, const u_char *packet) {
+int got_smtp(u_char *args, const u_char *packet, int data_len) {
     switch (*args) {
     case 0:
         print_verbosity(*args, 0, "SMTP\t\t\t\t");
@@ -70,7 +70,7 @@ int got_smtp(u_char *args, const u_char *packet) {
 
         // Print the rest of the packet
         int i = 0;
-        while (isprint(packet[i])) {
+        while (isprint(packet[i]) && i < data_len) {
             print_verbosity(*args, 1, "%c", packet[i]);
             i++;
         }

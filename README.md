@@ -34,9 +34,10 @@ To use the programm, you must run the executable file `sniffer` with the followi
 - [x] Decode vendor infos in DHCP packets.
 - [x] Verbose mode.
 - [x] Decode SMTP packets.
-- [ ] Print correctly the vendor infos.
+- [x] Print correctly the vendor infos.
 - [x] Deocde DNS packets.
 - [x] Decode HTTP packets.
+- [x] Decode HTTPS packets.
 - [x] Decode POP3 packets.
 - [x] Decode IMAP packets.
 - [x] Decode FTP packets.
@@ -47,4 +48,4 @@ To use the programm, you must run the executable file `sniffer` with the followi
 - [ ] All verbose modes.
 - [ ] Correct the bug with pcap_live_open.
 - [ ] Another IPV6 packet.
-- [x] Correct buffer stdout for smtp and telnet.
+- [ ] ADD DATA_LEN FOR EVERY got_PROTOCOL FUNCTIUON !!

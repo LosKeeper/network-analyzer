@@ -6,6 +6,7 @@
 #include <string.h>
 
 #define HTTP_PORT 80
+#define HTTPS_PORT 443
 
 /**
  * @brief Print and decode the HTTP packet
@@ -15,3 +16,12 @@
  * @return 1 if the function printed something, 0 otherwise
  */
 int got_http(u_char *args, const u_char *packet);
+
+/**
+ * @brief Print and decode the HTTPS packet
+ *
+ * @param args the verbosity level
+ * @param packet the packet to analyse
+ * @return int 1 if the function printed something, 0 otherwise
+ */
+int got_https(u_char *args, const u_char *packet);
