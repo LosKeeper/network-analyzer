@@ -100,8 +100,13 @@ int got_bootp(u_char *args, const u_char *packet) {
     print_verbosity(*args, 1, "\033[32m");
     print_verbosity(*args, 1, "BOOTP : ");
     print_verbosity(*args, 1, "\033[0m");
+
+    // Verbose 2
+    print_verbosity(*args, 2, "\033[32m");
+    print_verbosity(*args, 2, "BOOTP : ");
+    print_verbosity(*args, 2, "\033[0m");
     print_verbosity(
-        *args, 1,
+        *args, 2,
         "Type : %d, htype : %d, hlen : %d, hops : %d, "
         "transaction id : %u, Delay : %d, Flags : %d, Client IP "
         "address : %s, Your IP address  : %s, Server IP address : "
@@ -157,135 +162,189 @@ int got_bootp(u_char *args, const u_char *packet) {
             packet += sizeof(struct vendorhdr);
         }
 
-    case 1:
+    default:
         // Get all the vendor options
         while (vendor->type != 255) {
+            // Verbose 1
             print_verbosity(*args, 1, "\033[32m");
             print_verbosity(*args, 1, "\tVendor : ");
             print_verbosity(*args, 1, "\033[0m");
             print_verbosity(*args, 1, "%s -> ", get_vendor_type(vendor->type));
+
+            // Verbose 2
+            print_verbosity(*args, 2, "\033[32m");
+            print_verbosity(*args, 2, "\tVendor : ");
+            print_verbosity(*args, 2, "\033[0m");
+            print_verbosity(*args, 2, "%s -> ", get_vendor_type(vendor->type));
+
             char *data = malloc(vendor->len);
             memcpy(data, packet, vendor->len);
             switch (vendor->type) {
             case 1:
                 print_verbosity(*args, 1, "%s\n",
                                 inet_ntoa(*(struct in_addr *)data));
+                print_verbosity(*args, 2, "%s\n",
+                                inet_ntoa(*(struct in_addr *)data));
                 break;
             case 2:
                 print_verbosity(*args, 1, "%s\n",
                                 inet_ntoa(*(struct in_addr *)data));
+                print_verbosity(*args, 2, "%s\n",
+                                inet_ntoa(*(struct in_addr *)data));
+
                 break;
             case 3:
                 print_verbosity(*args, 1, "%s\n",
+                                inet_ntoa(*(struct in_addr *)data));
+                print_verbosity(*args, 2, "%s\n",
                                 inet_ntoa(*(struct in_addr *)data));
                 break;
             case 6:
                 print_verbosity(*args, 1, "%s\n",
                                 inet_ntoa(*(struct in_addr *)data));
+                print_verbosity(*args, 2, "%s\n",
+                                inet_ntoa(*(struct in_addr *)data));
                 break;
             case 12:
                 print_verbosity(*args, 1, "%s\n", data);
+                print_verbosity(*args, 2, "%s\n", data);
                 break;
             case 15:
                 print_verbosity(*args, 1, "%s\n", data);
+                print_verbosity(*args, 2, "%s\n", data);
                 break;
             case 28:
                 print_verbosity(*args, 1, "%s\n",
+                                inet_ntoa(*(struct in_addr *)data));
+                print_verbosity(*args, 2, "%s\n",
                                 inet_ntoa(*(struct in_addr *)data));
                 break;
             case 44:
                 print_verbosity(*args, 1, "%s\n",
                                 inet_ntoa(*(struct in_addr *)data));
+                print_verbosity(*args, 2, "%s\n",
+                                inet_ntoa(*(struct in_addr *)data));
                 break;
             case 47:
                 print_verbosity(*args, 1, "%s\n", data);
+                print_verbosity(*args, 2, "%s\n", data);
                 break;
             case 50:
                 print_verbosity(*args, 1, "%s\n",
                                 inet_ntoa(*(struct in_addr *)data));
+                print_verbosity(*args, 2, "%s\n",
+                                inet_ntoa(*(struct in_addr *)data));
                 break;
             case 51:
                 print_verbosity(*args, 1, "%d\n", *(uint32_t *)data);
+                print_verbosity(*args, 2, "%d\n", *(uint32_t *)data);
                 break;
             case 53:
                 print_verbosity(*args, 1, "%d\n", *(uint8_t *)data);
+                print_verbosity(*args, 2, "%d\n", *(uint8_t *)data);
                 break;
             case 54:
                 print_verbosity(*args, 1, "%s\n",
                                 inet_ntoa(*(struct in_addr *)data));
+                print_verbosity(*args, 2, "%s\n",
+                                inet_ntoa(*(struct in_addr *)data));
                 break;
             case 55:
                 print_verbosity(*args, 1, "%s\n", data);
+                print_verbosity(*args, 2, "%s\n", data);
                 break;
             case 57:
                 print_verbosity(*args, 1, "%d\n", *(uint16_t *)data);
+                print_verbosity(*args, 2, "%d\n", *(uint16_t *)data);
                 break;
             case 58:
                 print_verbosity(*args, 1, "%d\n", *(uint32_t *)data);
+                print_verbosity(*args, 2, "%d\n", *(uint32_t *)data);
                 break;
             case 59:
                 print_verbosity(*args, 1, "%d\n", *(uint32_t *)data);
+                print_verbosity(*args, 2, "%d\n", *(uint32_t *)data);
                 break;
             case 60:
                 print_verbosity(*args, 1, "%s\n", data);
+                print_verbosity(*args, 2, "%s\n", data);
                 break;
             case 61:
                 print_verbosity(*args, 1, "%s\n", data);
+                print_verbosity(*args, 2, "%s\n", data);
                 break;
             case 66:
                 print_verbosity(*args, 1, "%s\n", data);
+                print_verbosity(*args, 2, "%s\n", data);
                 break;
             case 67:
                 print_verbosity(*args, 1, "%s\n", data);
+                print_verbosity(*args, 2, "%s\n", data);
                 break;
             case 81:
                 print_verbosity(*args, 1, "%s\n", data);
+                print_verbosity(*args, 2, "%s\n", data);
                 break;
             case 82:
                 switch (data[0]) {
                 case 1:
                     print_verbosity(*args, 1, "Agent Circuit ID : %s\n",
                                     (data + 2));
+                    print_verbosity(*args, 2, "Agent Circuit ID : %s\n",
+                                    (data + 2));
                     break;
                 case 2:
                     print_verbosity(*args, 1, "Agent Remote ID : %s\n",
+                                    (data + 2));
+                    print_verbosity(*args, 2, "Agent Remote ID : %s\n",
                                     (data + 2));
                     break;
                 }
                 break;
             case 90:
                 print_verbosity(*args, 1, "\n");
+                print_verbosity(*args, 2, "\n");
                 break;
             case 120:
                 // IPv4 case
                 if (data[0] == 1) {
                     print_verbosity(*args, 1, "%s\n",
                                     inet_ntoa(*(struct in_addr *)(data + 1)));
+                    print_verbosity(*args, 2, "%s\n",
+                                    inet_ntoa(*(struct in_addr *)(data + 1)));
                 } else {
                     // IPv6 case
                     print_verbosity(*args, 1, "%s\n", (data + 1));
+                    print_verbosity(*args, 2, "%s\n", (data + 1));
                 }
                 break;
             case 128:
                 print_verbosity(*args, 1, "%s\n", data);
+                print_verbosity(*args, 2, "%s\n", data);
                 break;
             case 129:
                 print_verbosity(*args, 1, "%s\n", data);
+                print_verbosity(*args, 2, "%s\n", data);
                 break;
             case 130:
                 print_verbosity(*args, 1, "%s\n", data);
+                print_verbosity(*args, 2, "%s\n", data);
                 break;
             case 131:
                 print_verbosity(*args, 1, "%s\n", data);
+                print_verbosity(*args, 2, "%s\n", data);
                 break;
             case 132:
                 print_verbosity(*args, 1, "%s\n", data);
+                print_verbosity(*args, 2, "%s\n", data);
                 break;
             case 133:
                 print_verbosity(*args, 1, "%s\n", data);
+                print_verbosity(*args, 2, "%s\n", data);
                 break;
             case 134:
                 print_verbosity(*args, 1, "%s\n", data);
+                print_verbosity(*args, 2, "%s\n", data);
                 break;
             case 255:
                 break;

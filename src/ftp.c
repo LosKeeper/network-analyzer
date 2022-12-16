@@ -6,12 +6,19 @@ int got_ftp(u_char *args, const u_char *packet, int req) {
     print_verbosity(*args, 1, "\033[32m");
     print_verbosity(*args, 1, "FTP : ");
     print_verbosity(*args, 1, "\033[0m");
+
+    print_verbosity(*args, 2, "\033[32m");
+    print_verbosity(*args, 2, "FTP : ");
+    print_verbosity(*args, 2, "\033[0m");
+
     if (req) {
         print_verbosity(*args, 0, "Request -> ");
         print_verbosity(*args, 1, "Request -> ");
+        print_verbosity(*args, 2, "Request -> ");
     } else {
         print_verbosity(*args, 0, "Response -> ");
         print_verbosity(*args, 1, "Response -> ");
+        print_verbosity(*args, 2, "Response -> ");
     }
     // Print the type of the resquest
     // Switch case for verboses modes
@@ -291,13 +298,14 @@ int got_ftp(u_char *args, const u_char *packet, int req) {
         }
         return 0;
 
-    case 1:
+    default:
         // Get the port for the data connection
         int port = 1;
         if (strncmp((char *)packet, "150", 3) == 0) {
             int i = 0;
             while (isprint(packet[i]) && packet[i] != ';') {
-                print_verbosity(*args, 0, "%c", packet[i]);
+                print_verbosity(*args, 1, "%c", packet[i]);
+                print_verbosity(*args, 2, "%c", packet[i]);
                 i++;
             }
             i = 0;
@@ -318,9 +326,11 @@ int got_ftp(u_char *args, const u_char *packet, int req) {
         // Print the FTP data
         while (isprint(*packet)) {
             print_verbosity(*args, 1, "%c", *packet);
+            print_verbosity(*args, 2, "%c", *packet);
             packet++;
         }
         print_verbosity(*args, 1, "\n");
+        print_verbosity(*args, 2, "\n");
         return port;
     }
     return 0;
@@ -334,6 +344,11 @@ int got_ftp_data(u_char *args, const u_char *packet) {
     print_verbosity(*args, 1, "FTP-DATA : ");
     print_verbosity(*args, 1, "\033[0m");
     print_verbosity(*args, 1, "Data received from FTP server\n");
+
+    print_verbosity(*args, 2, "\033[32m");
+    print_verbosity(*args, 2, "FTP-DATA : ");
+    print_verbosity(*args, 2, "\033[0m");
+    print_verbosity(*args, 2, "Data received from FTP server\n");
 
     return 1;
 }

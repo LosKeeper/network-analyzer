@@ -1,5 +1,5 @@
 # Analyseur Réseau 
-[![version](https://img.shields.io/badge/version-0.9.5-blue.svg)](https://github.com/LosKeeper/analyseur-reseau)
+[![version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/LosKeeper/analyseur-reseau)
 [![compiler](https://img.shields.io/badge/compiler-g++-red.svg)](https://github.com/LosKeeper/jeu-echecs-cpp/blob/main/Makefile)
 [![license](https://img.shields.io/badge/license-GPL_3.0-yellow.svg)](https://github.com/LosKeeper/analyseur-reseau/blob/main/LICENSE)
 [![author](https://img.shields.io/badge/author-LosKeeper-blue)](https://github.com/LosKeeper)
@@ -14,6 +14,7 @@
 
 ## Compilation
 To execute the program, you must first compile it using the command `make`. This will create an executable file called `sniffer` in the `bin` folder.
+You can also use the command `make test` to compile the program and test it whith the files in the `test` folder.
 
 ## Usage
 To use the programm, you must run the executable file `sniffer` with the following arguments:
@@ -45,7 +46,8 @@ To use the programm, you must run the executable file `sniffer` with the followi
 - [x] Decode ARP packets.
 - [x] Decode Telnet packets.
 - [x] IPv6 support.
-- [ ] All verbose modes.
+- [x] All verbose modes.
 - [ ] Correct the bug with pcap_live_open.
 - [ ] Another IPV6 packet.
 - [ ] ADD DATA_LEN FOR EVERY got_PROTOCOL FUNCTIUON !!
+- [ ] print unsigned int WITH %ud !!

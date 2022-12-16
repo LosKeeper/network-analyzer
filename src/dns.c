@@ -13,9 +13,15 @@ int got_dns(u_char *args, const u_char *packet, int data_len) {
     print_verbosity(*args, 1, "DNS : ");
     print_verbosity(*args, 1, "\033[0m");
 
+    // Verbosity 2
+    print_verbosity(*args, 2, "\033[32m");
+    print_verbosity(*args, 2, "DNS : ");
+    print_verbosity(*args, 2, "\033[0m");
+
     if (ntohs(dns->flags) < 0x8000) {
         print_verbosity(*args, 0, "Query -> ");
         print_verbosity(*args, 1, "Query -> ");
+        print_verbosity(*args, 2, "Query -> ");
         // Get the name
         // Only print the first query for the verbosity 0
         for (int j = 0; j < ntohs(dns->qdcount); j++) {
@@ -41,59 +47,73 @@ int got_dns(u_char *args, const u_char *packet, int data_len) {
             case 1:
                 print_verbosity(*args, 0, "A : ");
                 print_verbosity(*args, 1, "A : ");
+                print_verbosity(*args, 2, "A : ");
                 break;
             case 2:
                 print_verbosity(*args, 0, "NS : ");
                 print_verbosity(*args, 1, "NS : ");
+                print_verbosity(*args, 2, "NS : ");
                 break;
             case 5:
                 print_verbosity(*args, 0, "CNAME : ");
                 print_verbosity(*args, 1, "CNAME : ");
+                print_verbosity(*args, 2, "CNAME : ");
                 break;
             case 6:
                 print_verbosity(*args, 0, "SOA : ");
                 print_verbosity(*args, 1, "SOA : ");
+                print_verbosity(*args, 2, "SOA : ");
                 break;
             case 12:
                 print_verbosity(*args, 0, "PTR : ");
                 print_verbosity(*args, 1, "PTR : ");
+                print_verbosity(*args, 2, "PTR : ");
                 break;
             case 15:
                 print_verbosity(*args, 0, "MX : ");
                 print_verbosity(*args, 1, "MX : ");
+                print_verbosity(*args, 2, "MX : ");
                 break;
             case 16:
                 print_verbosity(*args, 0, "TXT : ");
                 print_verbosity(*args, 1, "TXT : ");
+                print_verbosity(*args, 2, "TXT : ");
                 break;
             case 28:
                 print_verbosity(*args, 0, "AAAA : ");
                 print_verbosity(*args, 1, "AAAA : ");
+                print_verbosity(*args, 2, "AAAA : ");
                 break;
             case 33:
                 print_verbosity(*args, 0, "SRV : ");
                 print_verbosity(*args, 1, "SRV : ");
+                print_verbosity(*args, 2, "SRV : ");
                 break;
             case 41:
                 print_verbosity(*args, 0, "OPT : ");
                 print_verbosity(*args, 1, "OPT : ");
+                print_verbosity(*args, 2, "OPT : ");
                 break;
             case 251:
                 print_verbosity(*args, 0, "IXFR : ");
                 print_verbosity(*args, 1, "IXFR : ");
+                print_verbosity(*args, 2, "IXFR : ");
                 break;
             case 252:
                 print_verbosity(*args, 0, "AXFR : ");
                 print_verbosity(*args, 1, "AXFR : ");
+                print_verbosity(*args, 2, "AXFR : ");
                 break;
             case 255:
                 print_verbosity(*args, 0, "ANY : ");
                 print_verbosity(*args, 1, "ANY : ");
+                print_verbosity(*args, 2, "ANY : ");
                 break;
             }
             // Print the query name
             print_verbosity(*args, 0, "%s,... ", nameq);
             print_verbosity(*args, 1, "%s, ", nameq);
+            print_verbosity(*args, 2, "%s, ", nameq);
             free(nameq);
             if (*args == 0) {
                 goto dns_end;
@@ -103,6 +123,7 @@ int got_dns(u_char *args, const u_char *packet, int data_len) {
     if (ntohs(dns->flags) >= 0x8080) {
         print_verbosity(*args, 0, "Response -> ");
         print_verbosity(*args, 1, "Response -> ");
+        print_verbosity(*args, 2, "Response -> ");
         // Only print the first answer for the verbosity 0
         for (int j = 0; j < ntohs(dns->qdcount); j++) {
             // Get the name
@@ -128,59 +149,73 @@ int got_dns(u_char *args, const u_char *packet, int data_len) {
             case 1:
                 print_verbosity(*args, 0, "A : ");
                 print_verbosity(*args, 1, "A : ");
+                print_verbosity(*args, 2, "A : ");
                 break;
             case 2:
                 print_verbosity(*args, 0, "NS : ");
                 print_verbosity(*args, 1, "NS : ");
+                print_verbosity(*args, 2, "NS : ");
                 break;
             case 5:
                 print_verbosity(*args, 0, "CNAME : ");
                 print_verbosity(*args, 1, "CNAME : ");
+                print_verbosity(*args, 2, "CNAME : ");
                 break;
             case 6:
                 print_verbosity(*args, 0, "SOA : ");
                 print_verbosity(*args, 1, "SOA : ");
+                print_verbosity(*args, 2, "SOA : ");
                 break;
             case 12:
                 print_verbosity(*args, 0, "PTR : ");
                 print_verbosity(*args, 1, "PTR : ");
+                print_verbosity(*args, 2, "PTR : ");
                 break;
             case 15:
                 print_verbosity(*args, 0, "MX : ");
                 print_verbosity(*args, 1, "MX : ");
+                print_verbosity(*args, 2, "MX : ");
                 break;
             case 16:
                 print_verbosity(*args, 0, "TXT : ");
                 print_verbosity(*args, 1, "TXT : ");
+                print_verbosity(*args, 2, "TXT : ");
                 break;
             case 28:
                 print_verbosity(*args, 0, "AAAA : ");
                 print_verbosity(*args, 1, "AAAA : ");
+                print_verbosity(*args, 2, "AAAA : ");
                 break;
             case 33:
                 print_verbosity(*args, 0, "SRV : ");
                 print_verbosity(*args, 1, "SRV : ");
+                print_verbosity(*args, 2, "SRV : ");
                 break;
             case 41:
                 print_verbosity(*args, 0, "OPT : ");
                 print_verbosity(*args, 1, "OPT : ");
+                print_verbosity(*args, 2, "OPT : ");
                 break;
             case 251:
                 print_verbosity(*args, 0, "IXFR : ");
                 print_verbosity(*args, 1, "IXFR : ");
+                print_verbosity(*args, 2, "IXFR : ");
                 break;
             case 252:
                 print_verbosity(*args, 0, "AXFR : ");
                 print_verbosity(*args, 1, "AXFR : ");
+                print_verbosity(*args, 2, "AXFR : ");
                 break;
             case 255:
                 print_verbosity(*args, 0, "ANY : ");
                 print_verbosity(*args, 1, "ANY : ");
+                print_verbosity(*args, 2, "ANY : ");
                 break;
             }
             // Print the query name
             print_verbosity(*args, 0, "%s,...", namer);
             print_verbosity(*args, 1, "%s, ", namer);
+            print_verbosity(*args, 2, "%s, ", namer);
             free(namer);
             if (*args == 0) {
                 goto dns_end;
@@ -196,46 +231,57 @@ int got_dns(u_char *args, const u_char *packet, int data_len) {
             case 1:
                 print_verbosity(*args, 0, "A : ");
                 print_verbosity(*args, 1, "A : ");
+                print_verbosity(*args, 2, "A : ");
                 break;
             case 2:
                 print_verbosity(*args, 0, "NS : ");
                 print_verbosity(*args, 1, "NS : ");
+                print_verbosity(*args, 2, "NS : ");
                 break;
             case 5:
                 print_verbosity(*args, 0, "CNAME : ");
                 print_verbosity(*args, 1, "CNAME : ");
+                print_verbosity(*args, 2, "CNAME : ");
                 break;
             case 6:
                 print_verbosity(*args, 0, "SOA : ");
                 print_verbosity(*args, 1, "SOA : ");
+                print_verbosity(*args, 2, "SOA : ");
                 break;
             case 12:
                 print_verbosity(*args, 0, "PTR : ");
                 print_verbosity(*args, 1, "PTR : ");
+                print_verbosity(*args, 2, "PTR : ");
                 break;
             case 15:
                 print_verbosity(*args, 0, "MX : ");
                 print_verbosity(*args, 1, "MX : ");
+                print_verbosity(*args, 2, "MX : ");
                 break;
             case 16:
                 print_verbosity(*args, 0, "TXT : ");
                 print_verbosity(*args, 1, "TXT : ");
+                print_verbosity(*args, 2, "TXT : ");
                 break;
             case 28:
                 print_verbosity(*args, 0, "AAAA : ");
                 print_verbosity(*args, 1, "AAAA : ");
+                print_verbosity(*args, 2, "AAAA : ");
                 break;
             case 33:
                 print_verbosity(*args, 0, "SRV : ");
                 print_verbosity(*args, 1, "SRV : ");
+                print_verbosity(*args, 2, "SRV : ");
                 break;
             case 41:
                 print_verbosity(*args, 0, "OPT : ");
                 print_verbosity(*args, 1, "OPT : ");
+                print_verbosity(*args, 2, "OPT : ");
                 break;
             case 255:
                 print_verbosity(*args, 0, "ANY : ");
                 print_verbosity(*args, 1, "ANY : ");
+                print_verbosity(*args, 2, "ANY : ");
                 break;
             }
             // Get the DNS message class
@@ -243,18 +289,22 @@ int got_dns(u_char *args, const u_char *packet, int data_len) {
             case 1:
                 print_verbosity(*args, 0, "IN : ");
                 print_verbosity(*args, 1, "IN : ");
+                print_verbosity(*args, 2, "IN : ");
                 break;
             case 2:
                 print_verbosity(*args, 0, "CS : ");
                 print_verbosity(*args, 1, "CS : ");
+                print_verbosity(*args, 2, "CS : ");
                 break;
             case 3:
                 print_verbosity(*args, 0, "CH : ");
                 print_verbosity(*args, 1, "CH : ");
+                print_verbosity(*args, 2, "CH : ");
                 break;
             case 4:
                 print_verbosity(*args, 0, "HS : ");
                 print_verbosity(*args, 1, "HS : ");
+                print_verbosity(*args, 2, "HS : ");
                 break;
             }
             int datalen = ntohs(answer->rdlength);
@@ -274,6 +324,7 @@ int got_dns(u_char *args, const u_char *packet, int data_len) {
                 inet_ntop(AF_INET, &addr, ip, INET_ADDRSTRLEN);
                 print_verbosity(*args, 0, "%s,... ", ip);
                 print_verbosity(*args, 1, "%s, ", ip);
+                print_verbosity(*args, 2, "%s, ", ip);
                 free(ip);
             } else if (ntohs(answer->type) == 28) {
                 struct in6_addr addr;
@@ -282,6 +333,7 @@ int got_dns(u_char *args, const u_char *packet, int data_len) {
                 inet_ntop(AF_INET6, &addr, ip, INET6_ADDRSTRLEN);
                 print_verbosity(*args, 0, "%s,... ", ip);
                 print_verbosity(*args, 1, "%s, ", ip);
+                print_verbosity(*args, 2, "%s, ", ip);
                 free(ip);
             } else if (data[0] == (char)0xc0) {
                 int go_to = data[1];
@@ -300,6 +352,7 @@ int got_dns(u_char *args, const u_char *packet, int data_len) {
                 named[i] = '\0';
                 print_verbosity(*args, 0, "%s,... ", named);
                 print_verbosity(*args, 1, "%s, ", named);
+                print_verbosity(*args, 2, "%s, ", named);
                 free(named);
 
             } else {
@@ -307,10 +360,12 @@ int got_dns(u_char *args, const u_char *packet, int data_len) {
                 while (isprint(data[i]) && i < datalen) {
                     print_verbosity(*args, 0, "%c", data[i]);
                     print_verbosity(*args, 1, "%c", data[i]);
+                    print_verbosity(*args, 2, "%c", data[i]);
                     i += 1;
                 }
                 print_verbosity(*args, 0, ",...");
                 print_verbosity(*args, 1, ", ");
+                print_verbosity(*args, 2, ", ");
             }
             if (*args == 0) {
                 goto dns_end;

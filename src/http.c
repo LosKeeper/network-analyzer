@@ -41,7 +41,7 @@ int got_http(u_char *args, const u_char *packet) {
         }
         return 0;
 
-    case 1:
+    default:
         // Verbose 1
         char *buff = malloc(256);
         int i = 0;
@@ -56,6 +56,11 @@ int got_http(u_char *args, const u_char *packet) {
             print_verbosity(*args, 1, "HTTP : ");
             print_verbosity(*args, 1, "\033[0m");
             print_verbosity(*args, 1, "%s\n", buff);
+
+            print_verbosity(*args, 2, "\033[32m");
+            print_verbosity(*args, 2, "HTTP : ");
+            print_verbosity(*args, 2, "\033[0m");
+            print_verbosity(*args, 2, "%s\n", buff);
         }
         free(buff);
         return 1;
@@ -76,7 +81,13 @@ int got_https(u_char *args, const u_char *packet) {
         print_verbosity(*args, 1, "HTTPS : ");
         print_verbosity(*args, 1, "\033[0m");
         print_verbosity(*args, 1, "Encrypted packet\n");
+        return 1;
 
+    case 2:
+        print_verbosity(*args, 2, "\033[32m");
+        print_verbosity(*args, 2, "HTTPS : ");
+        print_verbosity(*args, 2, "\033[0m");
+        print_verbosity(*args, 2, "Encrypted packet\n");
         return 1;
     }
     return 0;

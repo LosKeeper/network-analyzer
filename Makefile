@@ -24,38 +24,110 @@ $(OBJECTS): $(OBJDIR)/%.o : $(SRCDIR)/%.c $(INCLUDES)
 	$(CC) -o $@ -c $< $(CFLAGS) -isystem$(INCLUDE_PATH)
 
 test: $(BINDIR)/$(TARGET)
-	@echo "Running tests..."
+	@echo "Running tests..." 
 	@echo "Testing ARP..."
+	@echo "Verbose level 0..."
 	@echo "------------------------------------"
 	./$(BINDIR)/$(TARGET) -o test/arp.cap -v 0
 	@echo "------------------------------------"
+	@echo "Verbose level 1..."
+	@echo "------------------------------------"
+	./$(BINDIR)/$(TARGET) -o test/arp.cap -v 1
+	@echo "------------------------------------"
+	@echo "Verbose level 2..."
+	@echo "------------------------------------"
+	./$(BINDIR)/$(TARGET) -o test/arp.cap -v 2
+	@echo "------------------------------------"
 	@echo "Testing DHCP..."
+	@echo "Verbose level 0..."
 	@echo "------------------------------------"
 	./$(BINDIR)/$(TARGET) -o test/dhcp.cap -v 0
 	@echo "------------------------------------"
-	@echo "Testing DHCP/IPV6..."
-	./$(BINDIR)/$(TARGET) -o test/dhcpv6.cap -v 0
+	@echo "Verbose level 1..."
+	@echo "------------------------------------"
+	./$(BINDIR)/$(TARGET) -o test/dhcp.cap -v 1
+	@echo "------------------------------------"
+	@echo "Verbose level 2..."
+	@echo "------------------------------------"
+	@echo "Testing SMTP/IPV6..."
+	@echo "Verbose level 0..."
+	@echo "------------------------------------"
+	./$(BINDIR)/$(TARGET) -o test/smtpv6.cap -v 0
+	@echo "------------------------------------"
+	@echo "Verbose level 1..."
+	@echo "------------------------------------"
+	./$(BINDIR)/$(TARGET) -o test/smtpv6.cap -v 1
+	@echo "------------------------------------"
+	@echo "Verbose level 2..."
+	@echo "------------------------------------"
+	./$(BINDIR)/$(TARGET) -o test/smtpv6.cap -v 2
 	@echo "------------------------------------"
 	@echo "Testing HTTP..."
+	@echo "Verbose level 0..."
 	@echo "------------------------------------"
 	./$(BINDIR)/$(TARGET) -o test/http.cap -v 0
 	@echo "------------------------------------"
+	@echo "Verbose level 1..."
+	@echo "------------------------------------"
+	./$(BINDIR)/$(TARGET) -o test/http.cap -v 1
+	@echo "------------------------------------"
+	@echo "Verbose level 2..."
+	@echo "------------------------------------"
+	./$(BINDIR)/$(TARGET) -o test/http.cap -v 2
+	@echo "------------------------------------"
 	@echo "Testing SMTP..."
+	@echo "Verbose level 0..."
 	@echo "------------------------------------"
 	./$(BINDIR)/$(TARGET) -o test/smtp.cap -v 0
 	@echo "------------------------------------"
+	@echo "Verbose level 1..."
+	@echo "------------------------------------"
+	./$(BINDIR)/$(TARGET) -o test/smtp.cap -v 1
+	@echo "------------------------------------"
+	@echo "Verbose level 2..."
+	@echo "------------------------------------"
+	./$(BINDIR)/$(TARGET) -o test/smtp.cap -v 2
+	@echo "------------------------------------"
 	@echo "Testing FTP..."
+	@echo "Verbose level 0..."
 	@echo "------------------------------------"
 	./$(BINDIR)/$(TARGET) -o test/ftp.cap -v 0
 	@echo "------------------------------------"
+	@echo "Verbose level 1..."
+	@echo "------------------------------------"
+	./$(BINDIR)/$(TARGET) -o test/ftp.cap -v 1
+	@echo "------------------------------------"
+	@echo "Verbose level 2..."
+	@echo "------------------------------------"
+	./$(BINDIR)/$(TARGET) -o test/ftp.cap -v 2
+	@echo "------------------------------------"
 	@echo "Testing DNS..."
+	@echo "Verbose level 0..."
 	@echo "------------------------------------"
 	./$(BINDIR)/$(TARGET) -o test/dns_qa.cap -v 0
 	@echo "------------------------------------"
+	@echo "Verbose level 1..."
+	@echo "------------------------------------"
+	./$(BINDIR)/$(TARGET) -o test/dns_qa.cap -v 1
+	@echo "------------------------------------"
+	@echo "Verbose level 2..."
+	@echo "------------------------------------"
+	./$(BINDIR)/$(TARGET) -o test/dns_qa.cap -v 2
+	@echo "------------------------------------"
 	@echo "Testing TELNET..."
+	@echo "Verbose level 0..."
 	@echo "------------------------------------"
 	./$(BINDIR)/$(TARGET) -o test/telnet.cap -v 0
 	@echo "------------------------------------"
+	@echo "Verbose level 1..."
+	@echo "------------------------------------"
+	./$(BINDIR)/$(TARGET) -o test/telnet.cap -v 1
+	@echo "------------------------------------"
+	@echo "Verbose level 2..."
+	@echo "------------------------------------"
+	./$(BINDIR)/$(TARGET) -o test/telnet.cap -v 2
+	@echo "------------------------------------"
+
 
 .PHONY: clean cov
 clean:

@@ -19,6 +19,20 @@ int get_pop3(u_char *args, const u_char *packet) {
         }
         print_verbosity(*args, 1, "\n");
         return 1;
+
+    case 2:
+        print_verbosity(*args, 2, "\033[32m");
+        print_verbosity(*args, 2, "POP3 : ");
+        print_verbosity(*args, 2, "\033[0m");
+
+        // Print the rest of the packet
+        i = 0;
+        while (isprint(packet[i])) {
+            print_verbosity(*args, 2, "%c", packet[i]);
+            i++;
+        }
+        print_verbosity(*args, 2, "\n");
+        return 1;
     }
     return 0;
 }
