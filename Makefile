@@ -128,9 +128,13 @@ test: $(BINDIR)/$(TARGET)
 	./$(BINDIR)/$(TARGET) -o test/telnet.cap -v 2
 	@echo "------------------------------------"
 
+tar:
+	make clean
+	tar -cvf $(TARGET).tar *
 
 .PHONY: clean cov
 clean:
+	rm -f *.tar
 	rm -f $(OBJDIR)/*.o
 	rm -f $(OBJDIR)/*.gcda
 	rm -f $(OBJDIR)/*.gcno

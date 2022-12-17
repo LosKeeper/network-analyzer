@@ -1,6 +1,6 @@
 #include "ftp.h"
 
-int got_ftp(u_char *args, const u_char *packet, int req) {
+int got_ftp(u_char *args, const u_char *packet, int req, int data_len) {
     print_verbosity(*args, 0, "FTP\t\t\t\t");
 
     print_verbosity(*args, 1, "\033[32m");
@@ -303,7 +303,7 @@ int got_ftp(u_char *args, const u_char *packet, int req) {
         int port = 1;
         if (strncmp((char *)packet, "150", 3) == 0) {
             int i = 0;
-            while (isprint(packet[i]) && packet[i] != ';') {
+            while (isprint(packet[i]) && packet[i] != ';' && i < data_len) {
                 print_verbosity(*args, 1, "%c", packet[i]);
                 print_verbosity(*args, 2, "%c", packet[i]);
                 i++;
@@ -324,11 +324,13 @@ int got_ftp(u_char *args, const u_char *packet, int req) {
             port = atoi(port_str);
         }
         // Print the FTP data
-        while (isprint(*packet)) {
-            print_verbosity(*args, 1, "%c", *packet);
-            print_verbosity(*args, 2, "%c", *packet);
-            packet++;
+        int i = 0;
+        while (isprint(packet[i]) && i < data_len) {
+            print_verbosity(*args, 1, "%c", packet[i]);
+            print_verbosity(*args, 2, "%c", packet[i]);
+            i++;
         }
+        packet += i;
         print_verbosity(*args, 1, "\n");
         print_verbosity(*args, 2, "\n");
         return port;

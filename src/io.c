@@ -2,12 +2,13 @@
 
 void print_usage(const char *progname) {
     printf("Usage: %s [options]", progname);
-    printf("Options:\n"
-           "-i, --interface <interface>    Listen on <interface> for packets.\n"
-           "-o, --origin                   Read from <file>.\n"
-           "-f, --filter <filter>          Set BPF filter to <filter>.\n"
-           "-v, --verbose <1,2,3>          Print verbose output.\n"
-           "-h, --help                     Print this help menu.\n");
+    printf(
+        "Options:\n"
+        "-i <interface>    Listen on <interface> for packets.\n"
+        "-o                Read from <file>.\n"
+        "-f <filter>       Set BPF filter to <filter>. NOT IMPLEMENTED YET !\n"
+        "-v <1,2,3>        Print verbose output.\n"
+        "-h                Print this help menu.\n");
 }
 
 void parse_args(int argc, char **argv, args_s *argument) {

@@ -7,7 +7,7 @@
 unsigned int packet_count = 0;
 
 /**
- * @brief Global variable corresponding to the port for FTP data
+ * @brief Global variable corresponding to the port for FTP data if it changes
  */
 unsigned int ftp_data = 20;
 
@@ -131,7 +131,7 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header,
                 goto tcp_end;
 
             case HTTP_PORT:
-                if (got_http(args, packet) == 0) {
+                if (got_http(args, packet, data_len) == 0) {
                     get_tcp(args, tcp);
                 }
                 goto tcp_end;
@@ -149,7 +149,7 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header,
                 goto tcp_end;
 
             case FTP_PORT:
-                if ((ftp_data = got_ftp(args, packet, 0)) == 0) {
+                if ((ftp_data = got_ftp(args, packet, 0, data_len)) == 0) {
                     get_tcp(args, tcp);
                 }
                 goto tcp_end;
@@ -161,25 +161,25 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header,
                 goto tcp_end;
 
             case POP3_PORT:
-                if (get_pop3(args, packet) == 0) {
+                if (get_pop3(args, packet, data_len) == 0) {
                     get_tcp(args, tcp);
                 }
                 goto tcp_end;
 
             case POP3S_PORT:
-                if (get_pop3(args, packet) == 0) {
+                if (get_pop3(args, packet, data_len) == 0) {
                     get_tcp(args, tcp);
                 }
                 goto tcp_end;
 
             case IMAP_PORT:
-                if (get_imap(args, packet) == 0) {
+                if (get_imap(args, packet, data_len) == 0) {
                     get_tcp(args, tcp);
                 }
                 goto tcp_end;
 
             case IMAP_SSL_PORT:
-                if (get_imap(args, packet) == 0) {
+                if (get_imap(args, packet, data_len) == 0) {
                     get_tcp(args, tcp);
                 }
                 goto tcp_end;
@@ -203,7 +203,7 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header,
                 goto tcp_end;
 
             case HTTP_PORT:
-                if (got_http(args, packet) == 0) {
+                if (got_http(args, packet, data_len) == 0) {
                     get_tcp(args, tcp);
                 }
                 goto tcp_end;
@@ -221,7 +221,7 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header,
                 goto tcp_end;
 
             case FTP_PORT:
-                if ((ftp_data = got_ftp(args, packet, 1)) == 0) {
+                if ((ftp_data = got_ftp(args, packet, 1, data_len)) == 0) {
                     get_tcp(args, tcp);
                 }
                 goto tcp_end;
@@ -233,25 +233,25 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header,
                 goto tcp_end;
 
             case POP3_PORT:
-                if (get_pop3(args, packet) == 0) {
+                if (get_pop3(args, packet, data_len) == 0) {
                     get_tcp(args, tcp);
                 }
                 goto tcp_end;
 
             case POP3S_PORT:
-                if (get_pop3(args, packet) == 0) {
+                if (get_pop3(args, packet, data_len) == 0) {
                     get_tcp(args, tcp);
                 }
                 goto tcp_end;
 
             case IMAP_PORT:
-                if (get_imap(args, packet) == 0) {
+                if (get_imap(args, packet, data_len) == 0) {
                     get_tcp(args, tcp);
                 }
                 goto tcp_end;
 
             case IMAP_SSL_PORT:
-                if (get_imap(args, packet) == 0) {
+                if (get_imap(args, packet, data_len) == 0) {
                     get_tcp(args, tcp);
                 }
                 goto tcp_end;
@@ -413,7 +413,7 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header,
                 goto tcp6_end;
 
             case HTTP_PORT:
-                if (got_http(args, packet) == 0) {
+                if (got_http(args, packet, data_len) == 0) {
                     get_tcp(args, tcp);
                 }
                 goto tcp6_end;
@@ -431,31 +431,31 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header,
                 goto tcp6_end;
 
             case FTP_PORT:
-                if ((ftp_data = got_ftp(args, packet, 0)) == 0) {
+                if ((ftp_data = got_ftp(args, packet, 0, data_len)) == 0) {
                     get_tcp(args, tcp);
                 }
                 goto tcp6_end;
 
             case POP3_PORT:
-                if (get_pop3(args, packet) == 0) {
+                if (get_pop3(args, packet, data_len) == 0) {
                     get_tcp(args, tcp);
                 }
                 goto tcp6_end;
 
             case POP3S_PORT:
-                if (get_pop3(args, packet) == 0) {
+                if (get_pop3(args, packet, data_len) == 0) {
                     get_tcp(args, tcp);
                 }
                 goto tcp6_end;
 
             case IMAP_PORT:
-                if (get_imap(args, packet) == 0) {
+                if (get_imap(args, packet, data_len) == 0) {
                     get_tcp(args, tcp);
                 }
                 goto tcp6_end;
 
             case IMAP_SSL_PORT:
-                if (get_imap(args, packet) == 0) {
+                if (get_imap(args, packet, data_len) == 0) {
                     get_tcp(args, tcp);
                 }
                 goto tcp6_end;
@@ -479,7 +479,7 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header,
                 goto tcp6_end;
 
             case HTTP_PORT:
-                if (got_http(args, packet) == 0) {
+                if (got_http(args, packet, data_len) == 0) {
                     get_tcp(args, tcp);
                 }
                 goto tcp6_end;
@@ -497,31 +497,31 @@ void got_packet(u_char *args, const struct pcap_pkthdr *header,
                 goto tcp6_end;
 
             case FTP_PORT:
-                if ((ftp_data = got_ftp(args, packet, 1)) == 0) {
+                if ((ftp_data = got_ftp(args, packet, 1, data_len)) == 0) {
                     get_tcp(args, tcp);
                 }
                 goto tcp6_end;
 
             case POP3_PORT:
-                if (get_pop3(args, packet) == 0) {
+                if (get_pop3(args, packet, data_len) == 0) {
                     get_tcp(args, tcp);
                 }
                 goto tcp6_end;
 
             case POP3S_PORT:
-                if (get_pop3(args, packet) == 0) {
+                if (get_pop3(args, packet, data_len) == 0) {
                     get_tcp(args, tcp);
                 }
                 goto tcp6_end;
 
             case IMAP_PORT:
-                if (get_imap(args, packet) == 0) {
+                if (get_imap(args, packet, data_len) == 0) {
                     get_tcp(args, tcp);
                 }
                 goto tcp6_end;
 
             case IMAP_SSL_PORT:
-                if (get_imap(args, packet) == 0) {
+                if (get_imap(args, packet, data_len) == 0) {
                     get_tcp(args, tcp);
                 }
                 goto tcp6_end;
@@ -602,6 +602,18 @@ void decode(char *interface, char *file, u_char verbosity) {
         if ((handle = pcap_open_live(interface, BUFSIZ, 1, 1000, errbuf)) ==
             NULL) {
             panic("pcap_open_live");
+        }
+
+        // Print header in terminal for verbosity level 0
+        if (verbosity == 0) {
+            // Print header in terminal in red
+            print_verbosity(verbosity, 0, "\033[0;31m");
+            print_verbosity(verbosity, 0, "Packet number\t\t\t");
+            print_verbosity(verbosity, 0, "Source\t\t\t\t\t");
+            print_verbosity(verbosity, 0, "Destination\t\t\t\t");
+            print_verbosity(verbosity, 0, "Protocol\t\t\t");
+            print_verbosity(verbosity, 0, "Infos\n");
+            print_verbosity(verbosity, 0, "\033[0m");
         }
 
         pcap_loop(handle, -1, got_packet, &verbosity);

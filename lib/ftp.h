@@ -13,10 +13,11 @@
  * @param args the verbosity level
  * @param packet the packet to analyze
  * @param req 1 if the packet is a request, 0 if it is a response
+ * @param data_len the length of the packet
  * @return 1 if the function printed something, 0 otherwise or the port for the
  * data connection
  */
-int got_ftp(u_char *args, const u_char *packet, int req);
+int got_ftp(u_char *args, const u_char *packet, int req, int data_len);
 
 /**
  * @brief Print and analyze FTP data packet

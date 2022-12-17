@@ -3,12 +3,15 @@
 int got_telnet(u_char *args, const u_char *packet, int data_len) {
     int rtn = 0;
 
+    // Verbosity 0
     print_verbosity(*args, 0, "TELNET\t\t\t\t");
 
+    // Verbosity 1
     print_verbosity(*args, 1, "\033[32m");
     print_verbosity(*args, 1, "TELNET : ");
     print_verbosity(*args, 1, "\033[0m");
 
+    // Verbosity 2
     print_verbosity(*args, 2, "\033[32m");
     print_verbosity(*args, 2, "TELNET : ");
     print_verbosity(*args, 2, "\033[0m");

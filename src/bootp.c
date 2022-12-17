@@ -73,22 +73,6 @@ char *get_vendor_type(uint8_t type) {
     return "Unknown";
 }
 
-void print_bootp(struct bootphdr *bootp) {
-
-    printf("Type : %d, htype : %d, hlen : %d, hops : %d, "
-           "transaction id : %u, Delay : %d, Flags : %d, Adresse "
-           "IP client : %s, Your adresse IP  : %s, Adresse de Gateway "
-           ": %s, Adresse MAC source "
-           ": %s, Adresse MAC client : %s, Fichier de boot : %s, Nom "
-           "du serveur : %s\n",
-           bootp->op, bootp->htype, bootp->hlen, bootp->hops, bootp->xid,
-           bootp->secs, bootp->flags, inet_ntoa(bootp->ciaddr),
-           inet_ntoa(bootp->yiaddr), inet_ntoa(bootp->siaddr),
-           inet_ntoa(bootp->giaddr),
-           ether_ntoa((struct ether_addr *)bootp->chaddr), bootp->file,
-           bootp->sname);
-}
-
 int got_bootp(u_char *args, const u_char *packet) {
     struct bootphdr *bootp = (struct bootphdr *)(packet);
     packet += sizeof(struct bootphdr);
@@ -107,8 +91,8 @@ int got_bootp(u_char *args, const u_char *packet) {
     print_verbosity(*args, 2, "\033[0m");
     print_verbosity(
         *args, 2,
-        "Type : %d, htype : %d, hlen : %d, hops : %d, "
-        "transaction id : %u, Delay : %d, Flags : %d, Client IP "
+        "Type : %u, htype : %u, hlen : %u, hops : %u, "
+        "transaction id : %u, Delay : %u, Flags : %u, Client IP "
         "address : %s, Your IP address  : %s, Server IP address : "
         "%s, Gateway IP address : %s, "
         "Client MAC address : %s, Boot file name : %s, Server host name : %s\n",

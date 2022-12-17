@@ -3,6 +3,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+/**
+ * @brief Structure to store the arguments of the program
+ *
+ */
 typedef struct args {
     char *interface;
     char *file;

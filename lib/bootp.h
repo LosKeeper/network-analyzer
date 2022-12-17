@@ -10,6 +10,10 @@
 #define BOOTP_PORT_CLIENT 68
 #define BOOTP_PORT_SERVER 67
 
+/**
+ * @brief The bootp header
+ *
+ */
 struct bootphdr {
     uint8_t op;             // 1 = BOOTREQUEST, 2 = BOOTREPLY
     uint8_t htype;          // hardware address type
@@ -28,6 +32,10 @@ struct bootphdr {
     uint8_t magicCookie[4]; // magic cookie
 };
 
+/**
+ * @brief The vendor header
+ *
+ */
 struct vendorhdr {
     uint8_t type; // type
     uint8_t len;  // length
@@ -42,10 +50,10 @@ struct vendorhdr {
 char *get_vendor_type(uint8_t type);
 
 /**
- * @brief Print the bootp header
+ * @brief Print and analyze the bootp packet
  *
- * @param bootp
+ * @param args the verbosity level
+ * @param packet the packet to analyze
+ * @return 1 if the function printed something, 0 otherwise
  */
-void print_bootp(struct bootphdr *bootp);
-
 int got_bootp(u_char *args, const u_char *packet);

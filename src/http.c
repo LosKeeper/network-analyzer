@@ -1,6 +1,6 @@
 #include "http.h"
 
-int got_http(u_char *args, const u_char *packet) {
+int got_http(u_char *args, const u_char *packet, int data_len) {
     switch (*args) {
     case 0:
         // Verbose 0
@@ -42,10 +42,10 @@ int got_http(u_char *args, const u_char *packet) {
         return 0;
 
     default:
-        // Verbose 1
+        // Verbose 1 and 2
         char *buff = malloc(256);
         int i = 0;
-        while (isprint(packet[i])) {
+        while (isprint(packet[i]) && i < data_len) {
             buff[i] = packet[i];
             i++;
         }

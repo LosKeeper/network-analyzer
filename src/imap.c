@@ -1,6 +1,6 @@
 #include "imap.h"
 
-int get_imap(u_char *args, const u_char *packet) {
+int get_imap(u_char *args, const u_char *packet, int data_len) {
     switch (*args) {
     case 0:
         print_verbosity(*args, 0, "IMAP\t\t\t\t");
@@ -13,7 +13,7 @@ int get_imap(u_char *args, const u_char *packet) {
 
         // Print the rest of the packet
         int i = 0;
-        while (isprint(packet[i])) {
+        while (isprint(packet[i]) && i < data_len) {
             print_verbosity(*args, 1, "%c", packet[i]);
             i++;
         }
@@ -27,7 +27,7 @@ int get_imap(u_char *args, const u_char *packet) {
 
         // Print the rest of the packet
         i = 0;
-        while (isprint(packet[i])) {
+        while (isprint(packet[i]) && i < data_len) {
             print_verbosity(*args, 2, "%c", packet[i]);
             i++;
         }

@@ -14,5 +14,5 @@ int main(int argc, char *argv[]) {
         decode(NULL, argument.file, argument.verbose);
     }
 
-    return 0;
+    return EXIT_SUCCESS;
 }

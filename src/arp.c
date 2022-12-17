@@ -10,7 +10,7 @@ void get_arp(u_char *args, const u_char *packet) {
     int i = 0;
     int j = 0;
     while (i < 24) {
-        // Convert hexa to string
+        // Convert hexa to string to get mac address
         sprintf(src_mac + i, "%x", packet[j + 8]);
         sprintf(src_mac + i++, "%02x", packet[j + 8]);
         i++;
@@ -22,6 +22,7 @@ void get_arp(u_char *args, const u_char *packet) {
     i = 0;
     j = 0;
     while (j < 4) {
+        // Convert hexa to string to get ip address
         sprintf(src_ip + i, "%d", packet[j + 14]);
         if (packet[j + 14] >= 10) {
             i++;
@@ -40,7 +41,7 @@ void get_arp(u_char *args, const u_char *packet) {
     i = 0;
     j = 0;
     while (i < 24) {
-        // Convert hexa to string
+        // Convert hexa to string to get mac address
         sprintf(dst_mac + i, "%x", packet[j + 18]);
         sprintf(dst_mac + i++, "%02x", packet[j + 18]);
         i++;
@@ -52,6 +53,7 @@ void get_arp(u_char *args, const u_char *packet) {
     i = 0;
     j = 0;
     while (j < 4) {
+        // Convert hexa to string to get ip address
         sprintf(dst_ip + i, "%d", packet[j + 14]);
         if (packet[j + 14] >= 10) {
             i++;

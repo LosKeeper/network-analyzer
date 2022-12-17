@@ -1,8 +1,8 @@
 #include "tcp.h"
 
 void get_tcp(u_char *args, struct tcphdr *tcp) {
-    // Si aucun port n'est reconnu, on affiche le contenu du paquet
-    // TCP
+    // Print the content of the TCP header if no any others protocol is
+    // recognized
     if (tcp->th_flags & TH_SYN) {
         print_verbosity(*args, 0, "SYN,");
     }

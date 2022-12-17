@@ -23,7 +23,6 @@ int got_dns(u_char *args, const u_char *packet, int data_len) {
         print_verbosity(*args, 1, "Query -> ");
         print_verbosity(*args, 2, "Query -> ");
         // Get the name
-        // Only print the first query for the verbosity 0
         for (int j = 0; j < ntohs(dns->qdcount); j++) {
             char *nameq = malloc(256);
             offset += 1;
@@ -116,6 +115,7 @@ int got_dns(u_char *args, const u_char *packet, int data_len) {
             print_verbosity(*args, 2, "%s, ", nameq);
             free(nameq);
             if (*args == 0) {
+                // Only print the first query for the verbosity 0
                 goto dns_end;
             }
         }
@@ -124,7 +124,7 @@ int got_dns(u_char *args, const u_char *packet, int data_len) {
         print_verbosity(*args, 0, "Response -> ");
         print_verbosity(*args, 1, "Response -> ");
         print_verbosity(*args, 2, "Response -> ");
-        // Only print the first answer for the verbosity 0
+
         for (int j = 0; j < ntohs(dns->qdcount); j++) {
             // Get the name
             char *namer = malloc(256);
@@ -218,12 +218,12 @@ int got_dns(u_char *args, const u_char *packet, int data_len) {
             print_verbosity(*args, 2, "%s, ", namer);
             free(namer);
             if (*args == 0) {
+                // Only print the first answer for the verbosity 0
                 goto dns_end;
             }
         }
         // Get the answers
         for (int j = 0; j < ntohs(dns->ancount); j++) {
-            // Only print the first answer for verbosity 0
             struct dnsanswer *answer = (struct dnsanswer *)(packet + offset);
             offset += sizeof(struct dnsanswer);
             // Get the DNS message type
@@ -307,16 +307,20 @@ int got_dns(u_char *args, const u_char *packet, int data_len) {
                 print_verbosity(*args, 2, "HS : ");
                 break;
             }
+
             int datalen = ntohs(answer->rdlength);
+
             // Get the data
             char *data = malloc(datalen + 1);
             memcpy(data, packet + offset, datalen);
             offset += datalen;
+
             if (offset > data_len) {
                 free(data);
                 goto dns_end;
             }
             data[datalen] = '\0';
+
             if (ntohs(answer->type) == 1) {
                 struct in_addr addr;
                 memcpy(&addr, data, sizeof(addr));
@@ -326,6 +330,7 @@ int got_dns(u_char *args, const u_char *packet, int data_len) {
                 print_verbosity(*args, 1, "%s, ", ip);
                 print_verbosity(*args, 2, "%s, ", ip);
                 free(ip);
+
             } else if (ntohs(answer->type) == 28) {
                 struct in6_addr addr;
                 memcpy(&addr, data, sizeof(addr));
@@ -335,6 +340,7 @@ int got_dns(u_char *args, const u_char *packet, int data_len) {
                 print_verbosity(*args, 1, "%s, ", ip);
                 print_verbosity(*args, 2, "%s, ", ip);
                 free(ip);
+
             } else if (data[0] == (char)0xc0) {
                 int go_to = data[1];
                 char *named = malloc(256);
@@ -368,6 +374,7 @@ int got_dns(u_char *args, const u_char *packet, int data_len) {
                 print_verbosity(*args, 2, ", ");
             }
             if (*args == 0) {
+                // Only print the first answer for verbosity 0
                 goto dns_end;
             }
         }
