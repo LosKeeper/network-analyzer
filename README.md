@@ -1,7 +1,7 @@
-# Analyseur Réseau 
-[![version](https://img.shields.io/badge/version-1.0.1-blue.svg)](https://github.com/LosKeeper/analyseur-reseau)
-[![compiler](https://img.shields.io/badge/compiler-g++-red.svg)](https://github.com/LosKeeper/analyseur-reseau/blob/main/Makefile)
-[![license](https://img.shields.io/badge/license-GPL_3.0-yellow.svg)](https://github.com/LosKeeper/analyseur-reseau/blob/main/LICENSE)
+# Network Analyzer
+[![version](https://img.shields.io/badge/version-1.0.3-blue.svg)](https://github.com/LosKeeper/network-analyzer)
+[![compiler](https://img.shields.io/badge/compiler-g++-red.svg)](https://github.com/LosKeeper/network-analyzer/blob/main/Makefile)
+[![license](https://img.shields.io/badge/license-GPL_3.0-yellow.svg)](https://github.com/LosKeeper/network-analyzer/blob/main/LICENSE)
 [![author](https://img.shields.io/badge/author-LosKeeper-blue)](https://github.com/LosKeeper)
 > This is a network analyzer that can be used to analyze the network traffic of a computer. It is written in C and uses the libpcap library to capture the packets.
 > You need to have the libpcap library installed on your computer to compile the program :  
